@@ -1,25 +1,13 @@
-import "dotenv/config";
-import "./config/db.js";
+import express from 'express';
+import dotenv from 'dotenv';
 
-import app from "./app.js";
+dotenv.config({ path: './config/config.env'});
 
-// This is for maintaining the server.
-process.on("uncaughtException", (err) => {
-  console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
-  console.log(err.name, err.message);
-  console.log(err.stack);
-  process.exit(1);
-});
+const app = express();
 
-process.on("unhandledRejection", (err) => {
-  console.log("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.log(`${err}`);
-  server.close(() => {
-    process.exit(1);
-  });
-});
+app.get('/', (req, res) =>{
+  res.status(200).send("Get all Data success!")
+})
 
-const PORT = 3222;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Backend Server ready at http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3222
+app.listen(PORT, console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`));
