@@ -8,16 +8,18 @@ dotenv.config({ path: './src/config/config.env' });
 
 // Route files
 import golfballs from './routes/golfball.js';
+import auth from './routes/auth.js';
 
 // Connect to MongoDB
 connectDB();
 
 const app = express();
-
+app.use(express.json());
 app.use(cors());
 
 // Define routes
 app.use('/api/golfballs', golfballs);
+app.use('/api/auth', auth);
 
 const PORT = process.env.PORT || 3222;
 
