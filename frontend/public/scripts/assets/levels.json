@@ -1,0 +1,16 @@
+[
+    {
+        "level": 1,
+        "obstacles": [
+            {"x": 450, "y": 185, "type": "wooden_v", "scaleX": 0.2, "scaleY": 0.07},
+            {"x": 18, "y": 150, "type": "wooden_v", "scaleX": 0.7, "scaleY": 0.07},
+            {"x": 680, "y": 220, "type": "wooden_v", "scaleX": 0.7, "scaleY": 0.07},
+            {"x": 600, "y": 325, "type": "wooden_v", "scaleX": 0.7, "scaleY": 0.07},
+            {"x": 18, "y": 300, "type": "wooden_v", "scaleX": 1.5, "scaleY": 0.07}
+        ],
+        "hole" : {
+            "x":700 , "y": 520, "type": "hole" , "scale": 0.35
+        }
+    }
+
+]
