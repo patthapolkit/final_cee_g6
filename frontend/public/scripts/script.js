@@ -21,8 +21,8 @@ let background;
 let obstacles;
 let player1;
 let hole;
-let arrow;
-let mode = 1;
+let arrow = null;
+let mode = 1; // mode 0 = ball is moving, mode 1 = ball is not moving
 let currentLevel = 1;
 let angle;
 let power = 50;
@@ -67,11 +67,8 @@ function loadLevel(levelNumber) {
   // /** If you want to test physics of the ball and obastacles, uncomment below lines **/
   // player1.setVelocity(1000, 750);
   // let hole2 = this.physics.add.image(700, 520, 'hole').setScale(0.35);
-  // this.physics.add.overlap(player1, hole2, scored, null, this); 
-
-  // Create arrow
-  arrow = this.add.image(player1.x, player1.y, 'arrow').setScale(0.15);
-  arrow.setOrigin(0, 0.5);
+  // this.physics.add.overlap(player1, hole2, scored, null, this);
+  setMode.call(this, 1);
 }
 
 function create () {
@@ -110,12 +107,24 @@ function create () {
   loadLevel.call(this, currentLevel);
 }
 
+function setMode(mode) {
+  this.mode = mode;
+  if (mode === 0) {
+    if (arrow) {
+      arrow.destroy();
+    }
+  } else if (mode === 1) {
+    createArrow();
+  }
+}
+
 function createArrow() {
   arrow = this.add.image(player1.x, player1.y, 'arrow').setScale(0.15);
   arrow.setOrigin(0, 0.5);
 }
 
 function update () {
+  console.log(mode);
   // If the ball is moving
   if (mode === 0) {
     // check if the ball is overlapping with the hole
