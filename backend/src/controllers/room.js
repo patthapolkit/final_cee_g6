@@ -1,4 +1,3 @@
-import { log } from 'console';
 import Room from '../models/room.js';
 
 //@desc    Create Room
@@ -22,8 +21,22 @@ export const getAllRooms = async (req, res) => {
     } catch (error) {
       res.status(404).json({success: false, message: 'room not found' });
     }
-  };
+};
 
+
+//@desc    Get All Room number
+//@route   GET /api/room/number
+export const getAllRoomNumber = async (req, res) => {
+  try {
+    console.log("trying to get all number...");
+    const rooms = await Room.find();
+    const outData = rooms.map(room => room.roomNumber);
+    console.log(outData);
+    res.status(200).json({success: true, count: rooms.length, data: outData});
+  } catch (error) {
+    res.status(404).json({success: false, message: 'room not found' });
+  }
+};
 
 //@desc    Get room by Id
 //@route   GET /api/room/:id
@@ -33,6 +46,23 @@ export const getRoomById = async (req, res) => {
     if(!room){
         res.status(404).json({success: false, message: "not found"});
     }
+    res.status(200).json({success: true, data: room});
+  } catch (error) {
+    res.status(400).json({success: false, message: 'Failed to get room by Id' });
+  }
+};
+
+
+//@desc    Delete room by Id
+//@route   DELETE /api/room/:id
+export const deleteRoomById = async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+    if(!room){
+        res.status(404).json({success: false, message: "room not found"});
+    }
+
+    await room.deleteOne();
     res.status(200).json({success: true, data: room});
   } catch (error) {
     res.status(400).json({success: false, message: 'Error' });
@@ -73,3 +103,8 @@ export const createInstance = async (req, res) => {
     res.status(400).json({success: false, message:"Error 2"});
   }
 };
+
+// --------------------------------------------------------------------------
+
+//@desc    Delete Instance by Id
+//@route   POST /api/room/:id
