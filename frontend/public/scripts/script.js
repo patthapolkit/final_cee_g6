@@ -18,14 +18,15 @@ var config = {
 
 let game = new Phaser.Game(config);
 let background;
+let boundary;
 let obstacles;
 let player1;
 let hole;
 let arrow = null;
-let mode = 1; // mode 0 = ball is moving, mode 1 = ball is not moving
+let mode = 1;
 let currentLevel = 1;
 let angle;
-let power = 50;
+let power = 0;
 
 function preload () {
   this.load.image('grass', 'assets/grass.png');
@@ -40,6 +41,9 @@ function preload () {
 }
 
 function loadLevel(levelNumber) {
+  // Destroy previous obstacles
+  obstacles.clear(true, true);
+  hole.clear(true, true);
   // Get obstacles data for the current level
   const obstaclesData = levelData[(levelNumber - 1)%3].obstacles;
   const holeData = levelData[(levelNumber - 1)%3].hole
@@ -57,8 +61,9 @@ function loadLevel(levelNumber) {
   // Set player physics.
   player1.setBounce(0.5);
   player1.setDamping(true);
-  player1.setDrag(0.7);
+  player1.setDrag(0.65);
   this.physics.add.collider(player1, obstacles);
+  this.physics.add.collider(player1, boundary);
 
   // Init hole & set overlap with player.
   
@@ -79,17 +84,18 @@ function create () {
   
   /************************** Boundary ****************************/
   obstacles = this.physics.add.staticGroup();
+  boundary = this.physics.add.staticGroup();
 
   levelData = this.cache.json.get('levels');
-  
+  // Create boundary
   // top horizontal
-  obstacles.create(18, 18, 'wooden_v').setScale(3.1, 0.07).refreshBody();
+  boundary.create(18, 18, 'wooden_v').setScale(3.1, 0.07).refreshBody();
   // left vertical
-  obstacles.create(18, 18, 'wooden_h').setScale(0.07, 3.1).refreshBody();
+  boundary.create(18, 18, 'wooden_h').setScale(0.07, 3.1).refreshBody();
   // bottom horizontal
-  obstacles.create(782, 582, 'wooden_v').setScale(3.1, 0.07).refreshBody();
+  boundary.create(782, 582, 'wooden_v').setScale(3.1, 0.07).refreshBody();
   // right vertical
-  obstacles.create(782, 582, 'wooden_h').setScale(0.07, 3.1).refreshBody();
+  boundary.create(782, 582, 'wooden_h').setScale(0.07, 3.1).refreshBody();
   
   /************************** Boundary ****************************/
   
@@ -107,34 +113,40 @@ function create () {
   loadLevel.call(this, currentLevel);
 }
 
-function setMode(mode) {
-  this.mode = mode;
-  if (mode === 0) {
+function setMode(newMode) {
+  mode = newMode;
+  if (newMode === 0) { // If the ball is moving
     if (arrow) {
       arrow.destroy();
     }
-  } else if (mode === 1) {
-    createArrow();
+  } else if (newMode === 1) { // If the ball is not moving
+    createArrow.call(this);
   }
 }
 
 function createArrow() {
-  arrow = this.add.image(player1.x, player1.y, 'arrow').setScale(0.15);
+  arrow = this.add.image(player1.x, player1.y, 'arrow').setScale(0.15, 0.15);
   arrow.setOrigin(0, 0.5);
 }
 
 function update () {
-  console.log(mode);
-  // If the ball is moving
   if (mode === 0) {
+    // if the ball is moving, ball should not rotate with pointermove
+    this.input.off('pointermove');
+    this.input.off('pointerdown');
+    this.input.off('pointerup');
+
     // check if the ball is overlapping with the hole
     this.physics.add.overlap(player1, hole, scored, null, this);
 
-    // check if the ball is moving so slow that we can make it stop completly and switch to swing-mode
-    if (player1.body.speed < 1) {
-      mode = 1;
-      createArrow();
+    // check if the ball is moving so slow that we can make it stop completly and change the mode
+    console.log(player1.body.velocity.length());
+    if (player1.body.velocity.length() < 7) {
+      player1.setVelocity(0, 0);
+      setMode.call(this, 1);
     }
+    
+
   } else if (mode === 1) {
     this.input.on('pointermove', (pointer) => {
       angle = Phaser.Math.Angle.BetweenPoints(player1, pointer);
@@ -142,27 +154,30 @@ function update () {
       player1.rotation = angle;
       }
     );
-  
+
+    // when the pointer is down, increase the power
     this.input.on('pointerdown', (pointer) => {
       this.time.addEvent({
         loop: true,
-        delay: 150,
+        delay: 100,
         callback: () => {
-          if (power >= 1000) {
+          console.log(power);
+          if (power >= 800) {
             power = 50;
           } else {
-            power += 100;
+            power += 10;
           }
           // Scale X of the arrow to show the power
-          arrow.setScale(0.15 + power / 5000, 0.15);
+          arrow.setScale(0.15 + ((power / 800) * 0.15), 0.15);
         }
       });
     });
   
     // When the pointer is released, swing the ball
     this.input.on('pointerup', (pointer) => {
+      this.time.removeAllEvents();
       this.physics.velocityFromRotation(angle, power, player1.body.velocity);
-      arrow.destroy();
+      setMode.call(this, 0);
     });
   }
 }
