@@ -72,7 +72,7 @@ export const deleteRoomById = async (req, res) => {
 // --------------------------------------------------------------------------
 
 //@desc    Create Instance by Id
-//@route   POST /api/room/instance/:id
+//@route   POST /api/room/:id
 export const createInstance = async (req, res) => {
   try {
     const { player, current_swings, total_swings, current_position } = req.body;
@@ -113,20 +113,18 @@ export const createInstance = async (req, res) => {
 };
 
 //@desc    Delete Instance by Id
-//@route   PUT /api/room/instance/:id
+//@route   PUT /api/room/:id
 export const DeleteInstance = async (req, res) => {
   try {
     console.log("trying to delete instance....");
     const room = await Room.findById(req.params.id);
     if (!room) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Room not found" });
+      return res.status(404).json({ success: false, message: "Room not found" });
     }
     // Update the document in the collection to remove the player object from the Instance array
     await db.rooms.updateOne(
       { _id: ObjectId(req.params.id) }, // Filter criteria (replace with the room ID)
-      { $pull: { Instance: { player: req.body.player } } } // Pull (remove) the player object with the specified player ID
+      { $pull: { Instance: { player: req.body } } } // Pull (remove) the player object with the specified player ID
     );
 
     return res.status(200).json({ success: true, data: room.Instance });
@@ -136,7 +134,7 @@ export const DeleteInstance = async (req, res) => {
 };
 
 //@desc    Update Instance by Id
-//@route   PUT /api/room/instance/:id
+//@route   PUT /api/room/:id
 export const updateInstance = async (req, res) => {
   const { player, current_swings, total_swings, current_position } = req.body;
 

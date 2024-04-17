@@ -13,8 +13,9 @@ router.route('/number')
 router.route('/:id')
     .get(getRoomById)
     .post(createInstance)
-    .put(updateInstance)
-    .put(deleteRoomById);
+
+router.route('/instanceUpdate/:id').put(updateInstance);
+router.route('/instanceDelete/:id').put(deleteRoomById);
 
 
 export default router;
