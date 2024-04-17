@@ -167,7 +167,6 @@ function update() {
       }
     } else if (downTime !== 0) {
       power = powerCalc.call(this) * 1.5;
-      console.log("power: ", power);
       this.physics.velocityFromRotation(angle, power, player1.body.velocity);
       downTime = 0;
       setMode.call(this, 0);
