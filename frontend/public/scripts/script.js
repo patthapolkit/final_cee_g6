@@ -26,7 +26,7 @@ let arrow = null;
 let mode = 1;
 let currentLevel = 1;
 let angle;
-let power = 0;
+let power = 50;
 
 function preload () {
   this.load.image('grass', 'assets/grass.png');
@@ -43,7 +43,6 @@ function preload () {
 function loadLevel(levelNumber) {
   // Destroy previous obstacles
   obstacles.clear(true, true);
-  hole.clear(true, true);
   // Get obstacles data for the current level
   const obstaclesData = levelData[(levelNumber - 1)%3].obstacles;
   const holeData = levelData[(levelNumber - 1)%3].hole
@@ -53,31 +52,25 @@ function loadLevel(levelNumber) {
           .setScale(obstacle.scaleX, obstacle.scaleY)
           .refreshBody();
   });
-  hole = this.physics.add.image(holeData.x,holeData.y,holeData.type).setScale(holeData.scale)
   // Initialize player and hole
   // This part remains the same as before
   // Init player.
-  player1 = this.physics.add.image(400, 100, 'ball').setScale(0.015);
+  player1 = this.physics.add.image(400, 400, 'ball').setScale(0.015);
   // Set player physics.
   player1.setBounce(0.5);
   player1.setDamping(true);
   player1.setDrag(0.65);
   this.physics.add.collider(player1, obstacles);
   this.physics.add.collider(player1, boundary);
-
-  // Init hole & set overlap with player.
   
+  // Init hole & set overlap with player.
+  hole = this.physics.add.image(holeData.x,holeData.y,holeData.type).setScale(holeData.scale)
   this.physics.add.overlap(player1, hole, scored, null, this);
 
-  // /** If you want to test physics of the ball and obastacles, uncomment below lines **/
-  // player1.setVelocity(1000, 750);
-  // let hole2 = this.physics.add.image(700, 520, 'hole').setScale(0.35);
-  // this.physics.add.overlap(player1, hole2, scored, null, this);
   setMode.call(this, 1);
 }
 
 function create () {
-
   // Load background.
   background = this.add.image(400, 300, 'grass');
   background.setScale(1.6, 1.2);
@@ -131,23 +124,20 @@ function createArrow() {
 
 function update () {
   if (mode === 0) {
+    console.log('mode 0');
     // if the ball is moving, ball should not rotate with pointermove
     this.input.off('pointermove');
     this.input.off('pointerdown');
     this.input.off('pointerup');
 
-    // check if the ball is overlapping with the hole
-    this.physics.add.overlap(player1, hole, scored, null, this);
-
     // check if the ball is moving so slow that we can make it stop completly and change the mode
-    console.log(player1.body.velocity.length());
-    if (player1.body.velocity.length() < 7) {
+    if (player1.body.velocity.length() < 10) {
       player1.setVelocity(0, 0);
       setMode.call(this, 1);
     }
-    
 
   } else if (mode === 1) {
+    console.log('mode 1');
     this.input.on('pointermove', (pointer) => {
       angle = Phaser.Math.Angle.BetweenPoints(player1, pointer);
       arrow.rotation = angle;
@@ -161,7 +151,6 @@ function update () {
         loop: true,
         delay: 100,
         callback: () => {
-          console.log(power);
           if (power >= 800) {
             power = 50;
           } else {
@@ -185,5 +174,6 @@ function update () {
 // If player collide with hole, dissapear.
 function scored(player, hole) {
   player.disableBody(true, true);
-  loadLevel.call(this,currentLevel+1)
+  currentLevel++;
+  loadLevel.call(this,currentLevel);
 }
