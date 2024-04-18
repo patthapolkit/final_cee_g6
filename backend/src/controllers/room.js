@@ -72,69 +72,56 @@ export const deleteRoomById = async (req, res) => {
 // --------------------------------------------------------------------------
 
 //@desc    Create Instance by Id
-//@route   POST /api/room/:id
+//@route   PUT /api/room/instanceCreate/:id
 export const createInstance = async (req, res) => {
   try {
-    const { player, current_swings, total_swings, current_position } = req.body;
-    console.log(player, current_swings, total_swings, current_position);
-    if (
-      player === undefined ||
-      current_swings === undefined ||
-      total_swings === undefined ||
-      current_position === undefined
-    ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Error: Missing required fields" });
+    const roomId = req.params.id;
+    const newInstanceData = req.body;
+
+    const updatedRoom = await Room.findByIdAndUpdate(
+      roomId,
+      { $push: { Instance: newInstanceData } },
+      { new: true }
+    );
+
+    if (!updatedRoom) {
+      return res.status(404).json({success: false, message: "Room not found" });
     }
-    const newInstance = {
-      player: player,
-      current_swings: current_swings,
-      total_swings: total_swings,
-      current_position: current_position,
-    };
 
-    const room = await Room.findById(req.params.id);
-
-    const instances = room.Instance;
-    if (instances.some((instance) => instance.player.equals(player))) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Player already in the Instance!" });
-    }
-    instances.push(newInstance);
-
-    await room.save();
-
-    return res.status(201).json({ success: true, data: newInstance });
+    res.status(200).json({success: true, message: "Instance added successfully", room: updatedRoom });
   } catch (error) {
-    res.status(400).json({ success: false, message: "Error 2" });
+    console.error("Error adding instance:", error);
+    res.status(500).json({success: false, message: "Internal server error" });
   }
 };
 
 //@desc    Delete Instance by Id
-//@route   PUT /api/room/:id
-export const DeleteInstance = async (req, res) => {
+//@route   PUT /api/room/instanceDelete/:id
+export const deleteInstance = async (req, res) => {
   try {
-    console.log("trying to delete instance....");
-    const room = await Room.findById(req.params.id);
-    if (!room) {
-      return res.status(404).json({ success: false, message: "Room not found" });
-    }
-    // Update the document in the collection to remove the player object from the Instance array
-    await db.rooms.updateOne(
-      { _id: ObjectId(req.params.id) }, // Filter criteria (replace with the room ID)
-      { $pull: { Instance: { player: req.body } } } // Pull (remove) the player object with the specified player ID
+    console.log("trying to delete intstance");
+    const roomId = req.params.id;
+    const { player } = req.body; // Extracting the player ID from the request body
+    const updatedRoom = await Room.findByIdAndUpdate(
+      roomId,
+      { $pull: { Instance: { player } } },
+      { new: true }
     );
 
-    return res.status(200).json({ success: true, data: room.Instance });
-  } catch (err) {
-    return res.status(500).json({ success: false, message: "Server error" });
+    if (!updatedRoom) {
+      return res.status(404).json({success: false, message: "Room not found" });
+    }
+
+    res.status(200).json({success: true, message: "Instance deleted successfully", room: updatedRoom });
+  } catch (error) {
+    console.error("Error deleting instance:", error);
+    res.status(500).json({success: false, message: "Internal server error" });
   }
 };
 
+
 //@desc    Update Instance by Id
-//@route   PUT /api/room/:id
+//@route   PUT /api/room/instanceUpdate/:id
 export const updateInstance = async (req, res) => {
   const { player, current_swings, total_swings, current_position } = req.body;
 
