@@ -1,13 +1,31 @@
-import { createRoom, createUser } from "./api.js";
+import { createRoom, createUser, createInstance, getRoomNumber } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
 const nameInput = document.getElementById("nameInput");
 const roomNumberInput = document.getElementById("roomNumberInput");
 joinRoomButton.addEventListener("click", async () => {
-  await createUser({
+  const createdUser = await createUser({
     name: nameInput.value,
     roomNumber: roomNumberInput.value,
   });
+
+  const userId = createdUser.data._id;
+  const data = await getRoomNumber()
+  const roomId = data.data.find((room) => room.roomNumber === Number(roomNumberInput.value))
+  console.log(userId)
+  console.log(roomId._id)
+  console.log(data.data)
+  console.log(typeof(roomNumberInput.value))
+  await createInstance(roomId._id, {
+    player: userId,
+    current_swings: 0,
+    total_swings: 0,
+    current_position: {
+      posX: 18,
+      posY: 18
+    }
+  })
+
   nameInput.value = "";
   roomNumberInput.value = "";
 

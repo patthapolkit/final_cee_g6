@@ -35,13 +35,13 @@ export async function deleteRoomById(id) {
   });
 }
 
-export async function createInstance(id) {
+export async function createInstance(id, instance) {
   await fetch(`${BACKEND_URL}/api/room/instanceCreate/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify(instance),
   });
 }
 
