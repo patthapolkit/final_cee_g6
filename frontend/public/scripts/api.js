@@ -1,42 +1,88 @@
 import { BACKEND_URL } from "./config.js";
 
-export async function getItems() {
-  const items = await fetch(`${BACKEND_URL}/items`).then((r) => r.json());
-
-  return items;
-}
-
-export async function createItem(item) {
-  await fetch(`${BACKEND_URL}/items`, {
+export async function createRoom() {
+  await fetch(`${BACKEND_URL}/api/room`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(item),
+    body: JSON.stringify({}),
   });
 }
 
-export async function deleteItem(id, item) {
-  await fetch(`${BACKEND_URL}/items/${id}`, {
+export async function getRooms() {
+  const rooms = await fetch(`${BACKEND_URL}/api/room`).then((r) => r.json());
+  return rooms;
+}
+
+export async function getRoomNumber() {
+  const roomNumbers = await fetch(`${BACKEND_URL}/api/room/number`).then((r) =>
+    r.json()
+  );
+  return roomNumbers;
+}
+
+export async function getRoomById(id) {
+  const room = await fetch(`${BACKEND_URL}/api/room/${id}`).then((r) =>
+    r.json()
+  );
+  return room;
+}
+
+export async function deleteRoomById(id) {
+  await fetch(`${BACKEND_URL}/api/room/${id}`, {
     method: "DELETE",
   });
 }
 
-export async function filterItems(filterName, lowerPrice, upperPrice) {
-  // TODO3: implement this function
-  // You may need to understand handleFilterItem() function in ./table.js before implementing this function.
-  return /* return the filted items */;
+export async function createInstance(id) {
+  await fetch(`${BACKEND_URL}/api/room/instanceCreate/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({}),
+  });
 }
 
-export async function getMembers() {
-  // TODO4: implement this function
-  return /* return all members */;
+export async function updateInstance(id, instance) {
+  await fetch(`${BACKEND_URL}/api/room/instanceUpdate/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(instance),
+  });
 }
 
-export async function createMember(member) {
-  // TODO4: implement this function
+export async function deleteInstance(id, instance) {
+  await fetch(`${BACKEND_URL}/api/room/instanceDelete/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(instance),
+  });
 }
 
-export async function deleteMember(id, item) {
-  // TODO4: implement this function
+export async function getUsers() {
+  const users = await fetch(`${BACKEND_URL}/api/user`).then((r) => r.json());
+  return users;
+}
+
+export async function createUser(user) {
+  await fetch(`${BACKEND_URL}/api/user`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+  });
+}
+
+export async function getUserById(id) {
+  const user = await fetch(`${BACKEND_URL}/api/user/${id}`).then((r) =>
+    r.json()
+  );
+  return user;
 }

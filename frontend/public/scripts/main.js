@@ -1,23 +1,22 @@
-import { handleCreateMember, populateMembers } from "./member.js";
-import { fetchAndDrawTable, handleCreateItem, handleFilterItem } from "./table.js";
+import { createUser } from "./api.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  fetchAndDrawTable();
-
-  populateMembers();
-
-  const addItemButton = document.getElementById("add-newrow");
-  addItemButton.addEventListener("click", () => {
-    handleCreateItem();
+const joinRoomButton = document.getElementById("joinRoomButton");
+const nameInput = document.getElementById("nameInput");
+const roomNumberInput = document.getElementById("roomNumberInput");
+joinRoomButton.addEventListener("click", async () => {
+  await createUser({
+    name: nameInput.value,
+    roomNumber: roomNumberInput.value,
   });
-
-  const filterButton = document.getElementById("filter-button");
-  filterButton.addEventListener("click", () => {
-    handleFilterItem();
-  });
-
-  const addMemberButton = document.getElementById("add-member");
-  addMemberButton.addEventListener("click", () => {
-    handleCreateMember();
-  });
+  nameInput.value = "";
+  roomNumberInput.value = "";
 });
+
+// const createRoomButton = document.getElementById("createRoomButton");
+// createRoomButton.addEventListener("click", async () => {
+//   await createUser({
+//     name: nameInput.value,
+//     roomNumber: roomNumberInput.value,
+//   });
+//   nameInput.value = "";
+// });

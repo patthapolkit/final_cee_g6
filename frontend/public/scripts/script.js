@@ -1,3 +1,4 @@
+// Phaser Game
 const config = {
   type: Phaser.AUTO,
   width: 800,
@@ -76,8 +77,8 @@ function loadLevel(levelNumber) {
   this.physics.add.collider(player1, obstacles);
   this.physics.add.collider(player1, boundary);
 
-  // Overlap with more than 50% of the hole
-  hole.setSize(hole.width * 0.5, hole.height * 0.5);
+  // Overlap with more than 90% of the hole
+  hole.setSize(hole.width * 0.1, hole.height * 0.1);
   this.physics.add.overlap(player1, hole, scored, null, this);
 
   setMode.call(this, 1);
