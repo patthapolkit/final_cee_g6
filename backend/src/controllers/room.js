@@ -1,4 +1,3 @@
-import { log } from "console";
 import Room from "../models/room.js";
 
 //@desc    Create Room
@@ -29,7 +28,9 @@ export const getAllRoomNumber = async (req, res) => {
   try {
     console.log("trying to get all number...");
     const rooms = await Room.find();
-    const outData = rooms.map((room) => room.roomNumber);
+    const outData = rooms.map((room) => {
+      return { roomNumber: room.roomNumber, roomId: room._id };
+    });
     console.log(outData);
     res.status(200).json({ success: true, count: rooms.length, data: outData });
   } catch (error) {
@@ -85,13 +86,19 @@ export const createInstance = async (req, res) => {
     );
 
     if (!updatedRoom) {
-      return res.status(404).json({success: false, message: "Room not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Room not found" });
     }
 
-    res.status(200).json({success: true, message: "Instance added successfully", room: updatedRoom });
+    res.status(200).json({
+      success: true,
+      message: "Instance added successfully",
+      room: updatedRoom,
+    });
   } catch (error) {
     console.error("Error adding instance:", error);
-    res.status(500).json({success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -109,16 +116,21 @@ export const deleteInstance = async (req, res) => {
     );
 
     if (!updatedRoom) {
-      return res.status(404).json({success: false, message: "Room not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Room not found" });
     }
 
-    res.status(200).json({success: true, message: "Instance deleted successfully", room: updatedRoom });
+    res.status(200).json({
+      success: true,
+      message: "Instance deleted successfully",
+      room: updatedRoom,
+    });
   } catch (error) {
     console.error("Error deleting instance:", error);
-    res.status(500).json({success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-
 
 //@desc    Update Instance by Id
 //@route   PUT /api/room/instanceUpdate/:id
