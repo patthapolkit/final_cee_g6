@@ -1,12 +1,12 @@
 import { BACKEND_URL } from "./config.js";
 
-export async function createRoom() {
+export async function createRoom(room) {
   await fetch(`${BACKEND_URL}/api/room`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify(room),
   });
 }
 
@@ -71,13 +71,16 @@ export async function getUsers() {
 }
 
 export async function createUser(user) {
-  await fetch(`${BACKEND_URL}/api/user`, {
+  const response = await fetch(`${BACKEND_URL}/api/user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(user),
   });
+
+  const data = await response.json()
+  return data;
 }
 
 export async function getUserById(id) {
