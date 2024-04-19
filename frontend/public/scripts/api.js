@@ -10,12 +10,12 @@ export async function createRoom(room) {
   });
 }
 
-export async function getRooms() {
+export async function getAllRooms() {
   const rooms = await fetch(`${BACKEND_URL}/api/room`).then((r) => r.json());
   return rooms;
 }
 
-export async function getRoomNumber() {
+export async function getAllRoomNumber() {
   const roomNumbers = await fetch(`${BACKEND_URL}/api/room/number`).then((r) =>
     r.json()
   );
@@ -77,10 +77,8 @@ export async function createUser(user) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(user),
-  });
-
-  const data = await response.json()
-  return data;
+  }).then((r) => r.json());
+  return response;
 }
 
 export async function getUserById(id) {
