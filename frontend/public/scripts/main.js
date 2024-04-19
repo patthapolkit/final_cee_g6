@@ -25,16 +25,17 @@ joinRoomButton.addEventListener("click", async () => {
       name: nameInput.value,
       roomNumber: roomNumberInput.value,
     });
-    console.log(createdUser.name);
+    console.log(typeof(createdUser.data._id));
+    const userId = createdUser.data._id;
     nameInput.value = "";
 
    await createRoom({
       roomNumber: roomNumberInput.value,
       status: "waiting",
       numberOfPlayers: 1,
-      
+      playerTurn: userId,
       Instance: [{
-        player: createdUser._id,
+        player: userId,
         current_swings: 0,
         total_swings: 0,
         current_position: {
