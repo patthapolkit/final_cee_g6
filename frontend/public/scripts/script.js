@@ -31,15 +31,15 @@ let downTime;
 let inputPressed;
 
 function preload() {
-  this.load.image("grass", "assets/grass.png");
-  this.load.image("wooden_v", "assets/wooden_v.png");
-  this.load.image("wooden_h", "assets/wooden_h.png");
-  this.load.image("ball", "assets/ball.png");
-  this.load.image("hole", "assets/hole.png");
-  this.load.image("arrow", "assets/arrow.png");
+  this.load.image("grass", "../assets/grass.png");
+  this.load.image("wooden_v", "../assets/wooden_v.png");
+  this.load.image("wooden_h", "../assets/wooden_h.png");
+  this.load.image("ball", "../assets/ball.png");
+  this.load.image("hole", "../assets/hole.png");
+  this.load.image("arrow", "../assets/arrow.png");
 
   // Load obstacles JSON
-  this.load.json("levels", "assets/levels.json");
+  this.load.json("levels", "../assets/levels.json");
 }
 
 function loadLevel(levelNumber) {
