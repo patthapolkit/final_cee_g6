@@ -1,25 +1,36 @@
-import "dotenv/config";
-import "./config/db.js";
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import connectDB from './config/db.js';
 
-import app from "./app.js";
 
-// This is for maintaining the server.
-process.on("uncaughtException", (err) => {
-  console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
-  console.log(err.name, err.message);
-  console.log(err.stack);
-  process.exit(1);
-});
+dotenv.config({ path: './src/config/config.env'});
 
-process.on("unhandledRejection", (err) => {
-  console.log("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.log(`${err}`);
-  server.close(() => {
-    process.exit(1);
-  });
-});
+// Route files
+import golfballs from './routes/golfball.js';
+import user from './routes/user.js';
+import game from './routes/game.js';
+import room from './routes/room.js';
 
-const PORT = 3222;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Backend Server ready at http://localhost:${PORT}`);
-});
+// Connect to MongoDB
+connectDB();
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// Define routes
+app.use('/api/golfballs', golfballs);
+app.use('/api/user', user);
+app.use('/api/game', game);
+app.use('/api/room', room);
+
+const PORT = process.env.PORT || 3222;
+
+// Start server
+const server = app.listen(PORT, () => console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`));
+process.on('unhandledRejection', (err, promise)=>{
+    console.log(`Error: ${err.message}`);
+
+    server.close(()=> process.exit(1));
+})
