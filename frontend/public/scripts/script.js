@@ -69,7 +69,7 @@ function loadLevel(levelNumber) {
     .setScale(holeData.scale);
 
   // Create player
-  player1 = this.physics.add.image(400, 400, "ball").setScale(0.015);
+  player1 = this.physics.add.image(100, 100, "ball").setScale(0.015);
   // Set player physics properties
   player1.setBounce(0.5);
   player1.setDamping(true);
