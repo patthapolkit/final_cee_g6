@@ -1,27 +1,45 @@
-// Phaser Game
-const config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  physics: {
-    default: "arcade",
-    arcade: {
-      gravity: { x: 0, y: 0 },
-      debug: false,
-    },
-  },
-  scene: {
-    preload,
-    create,
-    update,
-  },
-};
+import { updateInstance } from "./api.js";
+import { BACKEND_URL } from "./config.js";
 
-let game;
+const params = new URLSearchParams(window.location.search);
+const roomId = params.get("roomId");
+const userId = params.get("userId");
+
+let game, lastFetchTime, fetchInterval;
+if (!roomId) {
+  alert("No room id provided.");
+} else if (!userId) {
+  alert("No player id provided.");
+} else {
+  // Phaser Game
+  const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+      default: "arcade",
+      arcade: {
+        gravity: { x: 0, y: 0 },
+        debug: true,
+      },
+    },
+    scene: {
+      preload,
+      create,
+      update,
+    },
+  };
+  game = new Phaser.Game(config);
+  lastFetchTime = 0;
+  fetchInterval = 5000; // Fetch data every 5 seconds
+}
+
 let background;
 let boundary;
 let obstacles;
-let player1;
+let levelData;
+let myPlayer;
+let players = {};
 let hole;
 let arrow = null;
 let mode = 1;
@@ -35,7 +53,10 @@ function preload() {
   this.load.image("grass", "../assets/grass.png");
   this.load.image("wooden_v", "../assets/wooden_v.png");
   this.load.image("wooden_h", "../assets/wooden_h.png");
-  this.load.image("ball", "../assets/ball.png");
+  this.load.image("ball1", "../assets/ball.png");
+  this.load.image("ball2", "../assets/ball.png");
+  this.load.image("ball3", "../assets/ball.png");
+  this.load.image("ball4", "../assets/ball.png");
   this.load.image("hole", "../assets/hole.png");
   this.load.image("arrow", "../assets/arrow.png");
 
@@ -45,8 +66,8 @@ function preload() {
 
 function loadLevel(levelNumber) {
   // Destroy previous player and hole
-  if (player1) {
-    player1.destroy();
+  if (myPlayer) {
+    myPlayer.destroy();
   }
   if (hole) {
     hole.destroy();
@@ -67,40 +88,28 @@ function loadLevel(levelNumber) {
   hole = this.physics.add
     .image(holeData.x, holeData.y, holeData.type)
     .setScale(holeData.scale);
+  hole.setSize(hole.width * 0.2, hole.height * 0.2);
 
-  // Create player
-  player1 = this.physics.add.image(100, 100, "ball").setScale(0.015);
-  // Set player physics properties
-  player1.setBounce(0.5);
-  player1.setDamping(true);
-  player1.setDrag(0.65);
-  this.physics.add.collider(player1, obstacles);
-  this.physics.add.collider(player1, boundary);
-
-  // Overlap with more than 90% of the hole
-  hole.setSize(hole.width * 0.1, hole.height * 0.1);
-  this.physics.add.overlap(player1, hole, scored, null, this);
-
-  setMode.call(this, 1);
+  // Init all players
+  initAllPlayers.call(this).then(() => {
+    this.physics.add.overlap(myPlayer, hole, scored, null, this);
+    setMode.call(this, 1);
+  });
 }
 
 function create() {
   // Load background.
   background = this.add.image(400, 300, "grass");
   background.setScale(1.6, 1.2);
-
   levelData = this.cache.json.get("levels");
   obstacles = this.physics.add.staticGroup();
-
   // Create boundary
   boundary = this.physics.add.staticGroup();
   boundary.create(18, 18, "wooden_v").setScale(3.1, 0.07).refreshBody(); // top horizontal
   boundary.create(18, 18, "wooden_h").setScale(0.07, 3.1).refreshBody(); // left vertical
   boundary.create(782, 582, "wooden_v").setScale(3.1, 0.07).refreshBody(); // bottom horizontal
   boundary.create(782, 582, "wooden_h").setScale(0.07, 3.1).refreshBody(); // right vertical
-
-  loadLevel.call(this, currentLevel);
-
+  loadLevel.call(this, 1);
   inputPressed = false;
   downTime = 0;
 }
@@ -126,12 +135,23 @@ function setMode(newMode) {
       arrow.destroy();
     }
   } else if (newMode === 1) {
+    // set ball velocity to 0
+    myPlayer.setVelocity(0, 0);
     createArrow.call(this);
+    updateInstance(roomId, {
+      player: userId,
+      current_swings: 0,
+      total_swings: 0,
+      current_position: {
+        posX: myPlayer.x,
+        posY: myPlayer.y,
+      },
+    });
   }
 }
 
 function createArrow() {
-  arrow = this.add.image(player1.x, player1.y, "arrow").setScale(0.15, 0.15);
+  arrow = this.add.image(myPlayer.x, myPlayer.y, "arrow").setScale(0.15, 0.15);
   arrow.setOrigin(0, 0.5);
 }
 
@@ -141,17 +161,16 @@ function update() {
     this.input.off("pointermove");
     this.input.off("pointerdown");
     this.input.off("pointerup");
-
     // check if the ball is moving so slow that we can make it stop completely and change the mode
-    if (player1.body.velocity.length() < 10) {
-      player1.setVelocity(0, 0);
+    if (myPlayer.body.velocity.length() < 10) {
       setMode.call(this, 1);
     }
   } else if (mode === 1) {
+    // check if ball is mode 1 and the player turn is userId
     this.input.on("pointermove", (pointer) => {
-      angle = Phaser.Math.Angle.BetweenPoints(player1, pointer);
+      angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
       arrow.rotation = angle;
-      player1.rotation = angle;
+      myPlayer.rotation = angle;
     });
     this.input.on("pointerdown", (pointer) => {
       inputPressed = true;
@@ -159,7 +178,6 @@ function update() {
     this.input.on("pointerup", (pointer) => {
       inputPressed = false;
     });
-
     if (inputPressed) {
       if (downTime === 0) {
         downTime = this.time.now;
@@ -168,11 +186,50 @@ function update() {
       }
     } else if (downTime !== 0) {
       power = powerCalc.call(this) * 1.5;
-      this.physics.velocityFromRotation(angle, power, player1.body.velocity);
+      this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
       downTime = 0;
       setMode.call(this, 0);
     }
   }
 }
 
-game = new Phaser.Game(config);
+async function initAllPlayers() {
+  const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);
+  const data = await response.json();
+
+  data.data.Instance.map((instance, index) => {
+    if (instance.player !== userId) {
+      let player = this.physics.add
+        .image(
+          instance.current_position.posX,
+          instance.current_position.posY,
+          `ball${index + 1}`
+        )
+        .setScale(0.015);
+      player.setBounce(0.5);
+      player.setDamping(true);
+      player.setDrag(0.65);
+      this.physics.add.collider(player, obstacles);
+      this.physics.add.collider(player, boundary);
+      players[instance.player] = player;
+    } else {
+      myPlayer = this.physics.add
+        .image(
+          instance.current_position.posX,
+          instance.current_position.posY,
+          `ball${index + 1}`
+        )
+        .setScale(0.015);
+      myPlayer.setBounce(0.5);
+      myPlayer.setDamping(true);
+      myPlayer.setDrag(0.65);
+      myPlayer.setDepth(1);
+      this.physics.add.collider(myPlayer, obstacles);
+      this.physics.add.collider(myPlayer, boundary);
+      players[userId] = myPlayer;
+    }
+  });
+
+  // Resolve the promise to indicate that initialization is complete
+  return Promise.resolve();
+}
