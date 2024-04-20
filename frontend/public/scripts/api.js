@@ -56,6 +56,16 @@ export async function updateInstance(id, instance) {
   });
 }
 
+export async function getInstance(roomId, playerId) {
+  const instance = await fetch(`${BACKEND_URL}/api/room/instanceGet/${roomId}?player=${playerId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return instance.json();
+}
+
 export async function deleteInstance(id, instance) {
   await fetch(`${BACKEND_URL}/api/room/instanceDelete/${id}`, {
     method: "PUT",

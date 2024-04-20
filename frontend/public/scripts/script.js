@@ -1,4 +1,4 @@
-import { updateInstance, getRoomById } from "./api.js";
+import { updateInstance, getInstance } from "./api.js";
 import { BACKEND_URL } from "./config.js";
 
 const params = new URLSearchParams(window.location.search);
@@ -138,17 +138,20 @@ function setMode(newMode) {
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
     createArrow.call(this);
-    const room =  getRoomById(roomId);
-    
 
-    updateInstance(roomId, {
-      player: userId,
-      current_swings: 0,
-      total_swings: 0,
-      current_position: {
-        posX: myPlayer.x,
-        posY: myPlayer.y,
-      },
+    getInstance(roomId, userId)
+    .then(response => {
+      const data = response.data;
+      console.log(data)
+      updateInstance(roomId, {
+        player: userId,
+        current_swings: data.current_swings + 1,
+        total_swings: data.total_swings + 1,
+        current_position: {
+          posX: myPlayer.x,
+          posY: myPlayer.y,
+        },
+      });
     });
   }
 }
@@ -216,6 +219,7 @@ async function initAllPlayers() {
       this.physics.add.collider(player, boundary);
       players[instance.player] = player;
     } else {
+      console.log("create pla")
       myPlayer = this.physics.add
         .image(
           instance.current_position.posX,
