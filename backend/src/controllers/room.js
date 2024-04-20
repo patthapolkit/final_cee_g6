@@ -95,6 +95,11 @@ export const createInstance = async (req, res) => {
     updatedRoom.current_players += 1;
     await updatedRoom.save();
 
+    if (updatedRoom.current_players === 4) {
+      updatedRoom.status = "playing";
+      await updatedRoom.save();
+    }
+
     res.status(200).json({
       success: true,
       message: "Instance added successfully",
@@ -128,6 +133,11 @@ export const deleteInstance = async (req, res) => {
     // reduce number of players in the room
     updatedRoom.current_players -= 1;
     await updatedRoom.save();
+
+    if (updatedRoom.current_players <= 4) {
+      updatedRoom.status = "waiting";
+      await updatedRoom.save();
+    }
 
     res.status(200).json({
       success: true,
