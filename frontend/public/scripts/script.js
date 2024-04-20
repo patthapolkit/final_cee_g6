@@ -132,12 +132,10 @@ function powerCalc() {
 function setMode(newMode) {
   mode = newMode;
   if (newMode === 0) {
-    console.log("mode0")
     if (arrow) {
       arrow.destroy();
     }
   } else if (newMode === 1) {
-    console.log("mode1")
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
     createArrow.call(this);
@@ -232,10 +230,13 @@ async function initAllPlayers() {
       this.physics.add.collider(player, boundary);
       players[instance.player] = player;
     } else {
+      if (myPlayer){
+        myPlayer.destroy()
+      }
       myPlayer = this.physics.add
         .image(
-          100,
-          100,
+          600,
+          400,
           `ball${index + 1}`
         )
         .setScale(0.015);
