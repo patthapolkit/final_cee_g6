@@ -72,6 +72,38 @@ export const deleteRoomById = async (req, res) => {
 
 // --------------------------------------------------------------------------
 
+//@desc    Get Instance by Id
+//@route   GET /api/room/instanceGet/:id?player=playerId
+export const getInstance = async (req, res) => {
+  try {
+    console.log("trying to get instance");
+    const roomId = req.params.id;
+    const playerId = req.query.player;
+
+    if (!roomId || !playerId) {
+      res
+        .status(404)
+        .json({ success: false, message: "roomId or playerId needed" });
+    }
+
+    const room = await Room.findById(roomId);
+
+    if (!room) {
+      res.status(404).json({ success: false, message: "room not found" });
+    }
+    const playerInstance = room.Instance.find((instance) =>
+      instance.player.equals(playerId)
+    );
+    if (!playerInstance) {
+      res.status(404).json({ success: false, message: "Instance not found" });
+    }
+    res.status(200).json({ success: true, data: playerInstance });
+  } catch (err) {
+    console.log(err.stack);
+    res.status(500).json({ success: false, message: "Error getting instance" });
+  }
+};
+
 //@desc    Create Instance by Id
 //@route   PUT /api/room/instanceCreate/:id
 export const createInstance = async (req, res) => {
