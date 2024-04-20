@@ -92,10 +92,10 @@ export const createInstance = async (req, res) => {
     }
 
     // increase number of players in the room
-    updatedRoom.current_players += 1;
+    updatedRoom.numberOfPlayers += 1;
     await updatedRoom.save();
 
-    if (updatedRoom.current_players === 4) {
+    if (updatedRoom.numberOfPlayers === 4) {
       updatedRoom.status = "playing";
       await updatedRoom.save();
     }
@@ -131,10 +131,10 @@ export const deleteInstance = async (req, res) => {
     }
 
     // reduce number of players in the room
-    updatedRoom.current_players -= 1;
+    updatedRoom.numberOfPlayers -= 1;
     await updatedRoom.save();
 
-    if (updatedRoom.current_players <= 4) {
+    if (updatedRoom.numberOfPlayers <= 4) {
       updatedRoom.status = "waiting";
       await updatedRoom.save();
     }
