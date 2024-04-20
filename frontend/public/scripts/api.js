@@ -1,13 +1,14 @@
 import { BACKEND_URL } from "./config.js";
 
 export async function createRoom(room) {
-  await fetch(`${BACKEND_URL}/api/room`, {
+  const response = await fetch(`${BACKEND_URL}/api/room`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(room),
-  });
+  }).then((r) => r.json());
+  return response;
 }
 
 export async function getAllRooms() {
@@ -27,6 +28,16 @@ export async function getRoomById(id) {
     r.json()
   );
   return room;
+}
+
+export async function updatePlayerTurn(id, room) {
+  await fetch(`${BACKEND_URL}/api/room/updatePlayerTurn/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(room),
+  });
 }
 
 export async function deleteRoomById(id) {

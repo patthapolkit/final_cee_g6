@@ -41,6 +41,7 @@ joinRoomButton.addEventListener("click", async () => {
 
   nameInput.value = "";
   roomNumberInput.value = "";
+  window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
 });
 
 createRoomButton.addEventListener("click", async () => {
@@ -50,7 +51,7 @@ createRoomButton.addEventListener("click", async () => {
   });
   const userId = createdUser.data._id;
 
-  await createRoom({
+  const createdRoom = await createRoom({
     roomNumber: roomNumberInput.value,
     status: "waiting",
     numberOfPlayers: 1,
@@ -67,7 +68,9 @@ createRoomButton.addEventListener("click", async () => {
       },
     ],
   });
+  const roomId = createdRoom.room._id;
 
   nameInput.value = "";
   roomNumberInput.value = "";
+  window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
 });
