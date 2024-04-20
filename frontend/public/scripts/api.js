@@ -30,16 +30,6 @@ export async function getRoomById(id) {
   return room;
 }
 
-export async function updatePlayerTurn(id, room) {
-  await fetch(`${BACKEND_URL}/api/room/updatePlayerTurn/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(room),
-  });
-}
-
 export async function deleteRoomById(id) {
   await fetch(`${BACKEND_URL}/api/room/${id}`, {
     method: "DELETE",
