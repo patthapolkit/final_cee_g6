@@ -1,4 +1,4 @@
-import { updateInstance } from "./api.js";
+import { updateInstance, getRoomById } from "./api.js";
 import { BACKEND_URL } from "./config.js";
 
 const params = new URLSearchParams(window.location.search);
@@ -138,6 +138,9 @@ function setMode(newMode) {
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
     createArrow.call(this);
+    const room =  getRoomById(roomId);
+    
+
     updateInstance(roomId, {
       player: userId,
       current_swings: 0,
