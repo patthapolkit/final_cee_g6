@@ -91,6 +91,10 @@ export const createInstance = async (req, res) => {
         .json({ success: false, message: "Room not found" });
     }
 
+    // increase number of players in the room
+    updatedRoom.current_players += 1;
+    await updatedRoom.save();
+
     res.status(200).json({
       success: true,
       message: "Instance added successfully",
@@ -120,6 +124,10 @@ export const deleteInstance = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Room not found" });
     }
+
+    // reduce number of players in the room
+    updatedRoom.current_players -= 1;
+    await updatedRoom.save();
 
     res.status(200).json({
       success: true,
