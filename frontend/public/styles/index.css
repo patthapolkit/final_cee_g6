@@ -1,0 +1,46 @@
+body {
+  font-family: "JetBrains Mono", monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+  flex-direction: column;
+}
+
+.registerBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.registerBox input {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.registerBox button {
+  font-family: "JetBrains Mono", monospace;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.registerBox button:hover {
+  background-color: #ccc;
+}
+
+.registerBox input::placeholder {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.registerBox input:focus {
+  outline: 1px solid #000;
+}
