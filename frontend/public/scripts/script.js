@@ -65,9 +65,9 @@ function preload() {
 }
 
 function loadLevel(levelNumber) {
-  // Destroy previous player and hole
-  if (myPlayer) {
-    myPlayer.destroy();
+  // Destroy previous arrow and hole
+  if (arrow) {
+    arrow.destroy();
   }
   if (hole) {
     hole.destroy();
@@ -117,6 +117,7 @@ function create() {
 function scored(player, hole) {
   // Check if the player is moving slow enough to enter the hole
   if (player.body.velocity.length() <= 250) {
+    setMode.call(this,2)
     player.disableBody(true, true);
     hole.disableBody(true, true);
     currentLevel++;
@@ -131,10 +132,12 @@ function powerCalc() {
 function setMode(newMode) {
   mode = newMode;
   if (newMode === 0) {
+    console.log("mode0")
     if (arrow) {
       arrow.destroy();
     }
   } else if (newMode === 1) {
+    console.log("mode1")
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
     createArrow.call(this);
@@ -150,6 +153,11 @@ function setMode(newMode) {
         posY: myPlayer.y,
       },
     });
+  //mode when ball fall in ahole
+  }else if (newMode === 2){
+    if (arrow) {
+      arrow.destroy();
+    }
   }
 }
 
@@ -187,12 +195,17 @@ function update() {
       } else {
         arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
       }
-    } else if (downTime !== 0) {
+    } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
       power = powerCalc.call(this) * 1.5;
       this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
       downTime = 0;
       setMode.call(this, 0);
     }
+  } else if (mode === 2){
+    //when score is called
+    this.input.off("pointermove");
+    this.input.off("pointerdown");
+    this.input.off("pointerup");
   }
 }
 
@@ -216,10 +229,15 @@ async function initAllPlayers() {
       this.physics.add.collider(player, boundary);
       players[instance.player] = player;
     } else {
+      //destroy player here
+      if (myPlayer) {
+        myPlayer.destroy()
+      }
+      //Need to handle new position of player
       myPlayer = this.physics.add
         .image(
-          instance.current_position.posX,
-          instance.current_position.posY,
+          100,
+          100,
           `ball${index + 1}`
         )
         .setScale(0.015);
