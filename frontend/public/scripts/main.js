@@ -69,7 +69,7 @@ createRoomButton.addEventListener("click", async () => {
     roomNumber: roomNumberInput.value,
   });
 
-  if (createUser.success) {
+  if (createdUser.success) {
     const userId = createdUser.data._id;
 
     const createdRoom = await createRoom({
@@ -95,6 +95,7 @@ createRoomButton.addEventListener("click", async () => {
     roomNumberInput.value = "";
     window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
   } else {
+    console.log("errorrrrr");
     openErrorPopup(createdUser.message);
   }
 });
