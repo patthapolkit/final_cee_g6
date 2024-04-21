@@ -49,28 +49,33 @@ createRoomButton.addEventListener("click", async () => {
     name: nameInput.value,
     roomNumber: roomNumberInput.value,
   });
-  const userId = createdUser.data._id;
 
-  const createdRoom = await createRoom({
-    roomNumber: roomNumberInput.value,
-    status: "waiting",
-    numberOfPlayers: 1,
-    playerTurn: userId,
-    Instance: [
-      {
-        player: userId,
-        current_swings: 0,
-        total_swings: 0,
-        current_position: {
-          posX: 100,
-          posY: 100,
+  if (createUser.success) {
+    const userId = createdUser.data._id;
+
+    const createdRoom = await createRoom({
+      roomNumber: roomNumberInput.value,
+      status: "waiting",
+      numberOfPlayers: 1,
+      playerTurn: userId,
+      Instance: [
+        {
+          player: userId,
+          current_swings: 0,
+          total_swings: 0,
+          current_position: {
+            posX: 100,
+            posY: 100,
+          },
         },
-      },
-    ],
-  });
-  const roomId = createdRoom.room._id;
+      ],
+    });
+    const roomId = createdRoom.room._id;
 
-  nameInput.value = "";
-  roomNumberInput.value = "";
-  window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+    nameInput.value = "";
+    roomNumberInput.value = "";
+    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+  } else {
+    alert(createdUser.message);
+  }
 });
