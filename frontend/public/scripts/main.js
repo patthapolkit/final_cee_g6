@@ -24,6 +24,7 @@ function openErrorPopup(message) {
   const errorText = document.getElementById("errorText");
   errorText.innerText = message;
   errorPopup.style.display = "block";
+  errorContainer.appendChild(errorPopup);
 }
 
 function closeErrorPopup() {
@@ -43,6 +44,11 @@ joinRoomButton.addEventListener("click", async () => {
     const room = rooms.data.find(
       (room) => room.roomNumber === Number(roomNumberInput.value)
     );
+
+    if (!room) {
+      openErrorPopup("Room not found");
+      return;
+    }
     const roomId = room.roomId;
 
     await createInstance(roomId, {
