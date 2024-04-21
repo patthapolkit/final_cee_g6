@@ -8,6 +8,7 @@ dotenv.config({ path: "./src/config/config.env" });
 // Route files
 import user from "./routes/user.js";
 import room from "./routes/room.js";
+import playerControl from "./routes/playerControl.js";
 
 // Connect to MongoDB
 connectDB();
@@ -19,6 +20,7 @@ app.use(cors());
 // Define routes
 app.use("/api/user", user);
 app.use("/api/room", room);
+app.use("/api/playerControl", playerControl);
 
 const PORT = process.env.PORT || 3222;
 
