@@ -7,7 +7,9 @@ export const createUser = async (req, res) => {
     const user = await User.create(req.body);
     res.status(201).json({ success: true, data: user });
   } catch (error) {
-    res.status(400).json({ success: false, message: "please type user" });
+    res
+      .status(400)
+      .json({ success: false, message: "Username/Room Number required" });
   }
 };
 
@@ -33,6 +35,8 @@ export const getUserbyId = async (req, res) => {
 
     res.status(200).json({ success: true, data: user });
   } catch (error) {
-    res.status(400).json({ success: false, message: "please type a user" });
+    res
+      .status(400)
+      .json({ success: false, message: "Username/Room Number required" });
   }
 };

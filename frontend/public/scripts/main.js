@@ -16,6 +16,20 @@ const joinRoomButton = document.getElementById("joinRoomButton");
 const createRoomButton = document.getElementById("createRoomButton");
 const nameInput = document.getElementById("nameInput");
 const roomNumberInput = document.getElementById("roomNumberInput");
+document
+  .getElementById("closeErrorBtn")
+  .addEventListener("click", closeErrorPopup);
+
+function openErrorPopup(message) {
+  const errorText = document.getElementById("errorText");
+  errorText.innerText = message;
+  errorPopup.style.display = "block";
+}
+
+function closeErrorPopup() {
+  const errorPopup = document.getElementById("errorPopup");
+  errorPopup.style.display = "none";
+}
 
 joinRoomButton.addEventListener("click", async () => {
   const createdUser = await createUser({
@@ -45,7 +59,7 @@ joinRoomButton.addEventListener("click", async () => {
     roomNumberInput.value = "";
     window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
   } else {
-    alert(createdUser.message);
+    openErrorPopup(createdUser.message);
   }
 });
 
@@ -81,6 +95,6 @@ createRoomButton.addEventListener("click", async () => {
     roomNumberInput.value = "";
     window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
   } else {
-    alert(createdUser.message);
+    openErrorPopup(createdUser.message);
   }
 });

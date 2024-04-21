@@ -68,3 +68,31 @@ body {
 .registerBox input:focus {
   outline: 1px solid #000;
 }
+
+.error-popup {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #f44336; /* Red color for error */
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1000;
+}
+
+.error-popup-content {
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: -25px; /* Adjust this value to your preference */
+  left: -15px; /* Adjust this value to your preference */
+  cursor: pointer;
+  font-size: 20px;
+}
+
+#errorText {
+  margin: 0;
+}
