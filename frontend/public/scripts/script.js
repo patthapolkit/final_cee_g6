@@ -28,12 +28,11 @@ if (!roomId) {
       create,
       update,
     },
-    /* parent: 'game-container', */
+
     scale: {
       mode: Phaser.Scale.FIT,
       parent: 'game-container',
-    //  autoCenter: Phaser.Scale.CENTER_BOTH,
-    } // Add this line to specify the parent container
+    } 
   };
   game = new Phaser.Game(config);
   lastFetchTime = 0;
@@ -46,6 +45,7 @@ let obstacles;
 let levelData;
 let myPlayer;
 let players = {};
+let turnIndex = new Array(4);
 let hole;
 let arrow = null;
 let mode = 1;
@@ -54,6 +54,8 @@ let angle;
 let power;
 let downTime;
 let inputPressed;
+let currentPlayerIdx = 0; // index 
+let inHole = 0;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -118,6 +120,23 @@ function create() {
   loadLevel.call(this, 1);
   inputPressed = false;
   downTime = 0;
+
+  // Add timer
+  let countdownValue = 11;
+  const countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
+  countdownText.setOrigin(0.5);
+
+  const updateCountdown = () => {
+    countdownValue--; // Decrease countdown value
+    countdownText.setText('Time: ' + countdownValue); // Update the text
+    if (countdownValue <= 0) {
+        // Timer has reached zero, handle game over or other logic
+        clearInterval(countdownInterval); // Stop the countdown
+    }
+  };
+  
+  // Update the countdown timer every second (1000 milliseconds)
+  const countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 function scored(player, hole) {
@@ -125,9 +144,16 @@ function scored(player, hole) {
   if (player.body.velocity.length() <= 250) {
     setMode.call(this,2)
     player.disableBody(true, true);
+    inHole++; 
+   
+  
     hole.disableBody(true, true);
     currentLevel++;
     loadLevel.call(this, currentLevel);
+    
+   /*  hole.disableBody(true, true);
+    currentLevel++;
+    loadLevel.call(this, currentLevel); */
   }
 }
 
@@ -189,6 +215,9 @@ function update() {
       angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
       arrow.rotation = angle;
       myPlayer.rotation = angle;
+
+      //console.log(typeof(angle))
+    
     });
     this.input.on("pointerdown", (pointer) => {
       inputPressed = true;
@@ -204,7 +233,10 @@ function update() {
       }
     } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
       power = powerCalc.call(this) * 1.5;
+      // console.log(angle, power, myPlayer.body.velocity)
+      console.log(players)
       this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
+      
       downTime = 0;
       setMode.call(this, 0);
     }
@@ -219,12 +251,16 @@ function update() {
 async function initAllPlayers() {
   const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);
   const data = await response.json();
+  let idx = 0;
 
   data.data.Instance.map((instance, index) => {
     if (instance.player !== userId) {
+      if (players[instance.player]){
+        players[instance.player].destroy()
+      }
       let player = this.physics.add
         .image(
-          instance.current_position.posX,
+          instance.current_position.posX, 
           instance.current_position.posY,
           `ball${index + 1}`
         )
@@ -236,6 +272,8 @@ async function initAllPlayers() {
       this.physics.add.collider(player, boundary);
       this.physics.add.collider(player, myPlayer);
       players[instance.player] = player;
+      turnIndex[idx] = instance.player;
+      idx++;
     } else {
       if (myPlayer){
         myPlayer.destroy()
@@ -254,9 +292,20 @@ async function initAllPlayers() {
       this.physics.add.collider(myPlayer, obstacles);
       this.physics.add.collider(myPlayer, boundary);
       players[userId] = myPlayer;
+      turnIndex[idx] = userId;
+      idx++;
     }
+    
   });
 
+  // Add colliders between all players
+  for (const playerId1 in players) {
+    for (const playerId2 in players) {
+      if (playerId1 !== playerId2) {
+        this.physics.add.collider(players[playerId1], players[playerId2]);
+      }
+    }
+  }
   // Resolve the promise to indicate that initialization is complete
   return Promise.resolve();
 }
