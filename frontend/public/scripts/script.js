@@ -234,6 +234,7 @@ async function initAllPlayers() {
       player.setDrag(0.65);
       this.physics.add.collider(player, obstacles);
       this.physics.add.collider(player, boundary);
+      this.physics.add.collider(player, myPlayer);
       players[instance.player] = player;
     } else {
       if (myPlayer){
