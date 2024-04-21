@@ -22,26 +22,31 @@ joinRoomButton.addEventListener("click", async () => {
     name: nameInput.value,
     roomNumber: roomNumberInput.value,
   });
-  const userId = createdUser.data._id;
-  const rooms = await getAllRoomNumber();
-  const room = rooms.data.find(
-    (room) => room.roomNumber === Number(roomNumberInput.value)
-  );
-  const roomId = room.roomId;
 
-  await createInstance(roomId, {
-    player: userId,
-    current_swings: 0,
-    total_swings: 0,
-    current_position: {
-      posX: 100,
-      posY: 100,
-    },
-  });
+  if (createdUser.success) {
+    const userId = createdUser.data._id;
+    const rooms = await getAllRoomNumber();
+    const room = rooms.data.find(
+      (room) => room.roomNumber === Number(roomNumberInput.value)
+    );
+    const roomId = room.roomId;
 
-  nameInput.value = "";
-  roomNumberInput.value = "";
-  window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+    await createInstance(roomId, {
+      player: userId,
+      current_swings: 0,
+      total_swings: 0,
+      current_position: {
+        posX: 100,
+        posY: 100,
+      },
+    });
+
+    nameInput.value = "";
+    roomNumberInput.value = "";
+    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+  } else {
+    alert(createdUser.message);
+  }
 });
 
 createRoomButton.addEventListener("click", async () => {
