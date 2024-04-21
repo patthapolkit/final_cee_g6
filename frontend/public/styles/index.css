@@ -5,8 +5,30 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background-color: #f0f0f0;
+  background-color: #87ceeb;
   flex-direction: column;
+}
+
+.iconImage {
+  max-width: 200px;
+  margin-bottom: 20px;
+}
+
+.iconImage img {
+  max-width: 100%;
+  height: auto;
+}
+
+.center {
+  background-color: #82c084;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  max-width: 80%;
 }
 
 .registerBox {
@@ -18,23 +40,25 @@ body {
   margin-bottom: 10px;
 }
 
-.registerBox input {
-  padding: 5px;
+.registerBox input,
+.registerBox button {
+  padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .registerBox button {
-  font-family: "JetBrains Mono", monospace;
-  padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
   background-color: #f0f0f0;
   cursor: pointer;
 }
 
 .registerBox button:hover {
   background-color: #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
 
 .registerBox input::placeholder {
