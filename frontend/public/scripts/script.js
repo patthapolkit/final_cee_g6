@@ -28,6 +28,12 @@ if (!roomId) {
       create,
       update,
     },
+    /* parent: 'game-container', */
+    scale: {
+      mode: Phaser.Scale.FIT,
+      parent: 'game-container',
+    //  autoCenter: Phaser.Scale.CENTER_BOTH,
+    } // Add this line to specify the parent container
   };
   game = new Phaser.Game(config);
   lastFetchTime = 0;
