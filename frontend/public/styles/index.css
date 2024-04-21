@@ -74,7 +74,7 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #f44336; /* Red color for error */
+  background-color: #f44336;
   color: white;
   padding: 20px;
   border-radius: 8px;
@@ -87,8 +87,8 @@ body {
 
 .close-btn {
   position: absolute;
-  top: -25px; /* Adjust this value to your preference */
-  left: -15px; /* Adjust this value to your preference */
+  top: -25px;
+  left: -15px;
   cursor: pointer;
   font-size: 20px;
 }
