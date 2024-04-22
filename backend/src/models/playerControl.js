@@ -4,6 +4,14 @@ const playerControlSchema = new mongoose.Schema({
   player: {
     type: mongoose.Schema.ObjectId,
   },
+  currentMap: {
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+  },
   power: {
     type: Number,
     required: true,
