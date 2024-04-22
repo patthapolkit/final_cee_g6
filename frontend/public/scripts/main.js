@@ -132,7 +132,6 @@ createRoomButton.addEventListener("click", async () => {
     // set backend url in local storage
     window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
   } else {
-    console.log("errorrrrr");
     openErrorPopup(createdUser.message);
   }
 });
