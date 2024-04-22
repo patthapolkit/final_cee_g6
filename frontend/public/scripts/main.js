@@ -10,6 +10,7 @@ import {
   getUsers,
   createUser,
   getUserById,
+  createPlayerControl,
 } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
@@ -60,6 +61,11 @@ joinRoomButton.addEventListener("click", async () => {
         posY: 100,
       },
     });
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0
+    })
 
     nameInput.value = "";
     roomNumberInput.value = "";
@@ -96,6 +102,11 @@ createRoomButton.addEventListener("click", async () => {
       ],
     });
     const roomId = createdRoom.room._id;
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0
+    })
 
     nameInput.value = "";
     roomNumberInput.value = "";

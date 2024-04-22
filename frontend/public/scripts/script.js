@@ -1,5 +1,6 @@
-import { updateInstance, getInstance } from "./api.js";
+import { updateInstance, getInstance ,updatePlayerControlbyId,getPlayerControlbyId,getAllPlayerControl,createPlayerControl} from "./api.js";
 import { BACKEND_URL } from "./config.js";
+
 
 const params = new URLSearchParams(window.location.search);
 const roomId = params.get("roomId");
@@ -60,7 +61,7 @@ let countdownInterval;
 let countdownText;
 let screenText;
 let countdownValue;
-let playerNumber = 4 ;
+let playerNumber = 2 ;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -124,7 +125,7 @@ function loadLevel(levelNumber) {
 
 // Function to update the countdown timer
 function updateCountdown() {
-  console.log(countdownValue);
+  //console.log(countdownValue);
   countdownText.setText('Time: ' + countdownValue); // Update the text
   countdownValue--; // Decrease countdown value
 
@@ -236,7 +237,8 @@ function createArrow() {
 }
 
 function update() {
-  console.log(countdownInterval)
+  console.log(currentPlayerIdx)
+  //console.log(countdownInterval)
   if (turnIndex[currentPlayerIdx] === userId){
     if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
@@ -245,8 +247,9 @@ function update() {
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
       if (myPlayer.body.velocity.length() < 10) {
-        // Set text after the ball stopped
+        //indexing next player
         currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber
+        // Set text after the ball stopped
         screenText.setText('Next player turn!');
         // Disable input events
         this.input.enabled = false;
@@ -285,6 +288,13 @@ function update() {
         }
       } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
         power = powerCalc.call(this) * 1.5;
+
+        //--------update power and angle to database-----------
+        updatePlayerControlbyId(userId, {
+          angle: angle, // Send the angle data
+          power: power // Send the power data
+        });
+
         this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
         clearInterval(countdownInterval);
         countdownText.setText('');
@@ -300,24 +310,32 @@ function update() {
       this.input.off("pointerup");
     }
   }else{
-    inputOtherPlayer().then(() => {
-      //console.log(players[turnIndex[currentPlayerIdx]])
-      this.physics.velocityFromRotation(angle, power, players[turnIndex[currentPlayerIdx]].body.velocity);
-      currentPlayerIdx = (currentPlayerIdx+1) % playerNumber
-    });
+
+    if (mode === 1){
+      someOtherAsyncFunction()
+      const currentPlayer = players[turnIndex[currentPlayerIdx]];
+      if (currentPlayer && currentPlayer.body){
+        console.log('here')
+        this.physics.velocityFromRotation(angle, power, players[turnIndex[0]].body.velocity);
+      }
+    }
+    
+    
   }
+}
+async function someOtherAsyncFunction() {
+  await inputOtherPlayer();
 }
 
 async function inputOtherPlayer() {
-  console.log(userId)
-  const response = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${userId}`);
+  //console.log(userId)
+  const response = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${turnIndex[currentPlayerIdx]}`);
   const data = await response.json();
-
   // Find the instance corresponding to the specific person
-  const power = data.data.power
-  const angle = data.data.angle
-  // console.log(power,angle)
-  updatePowerAndAngle(power,angle);
+  power = data.power
+  angle = data.angle
+  //currentPlayerIdx = (currentPlayerIdx+1) % playerNumber
+  
 }
 
 function updatePowerAndAngle(newPower, newAngle) {
@@ -359,8 +377,8 @@ async function initAllPlayers() {
       }
       myPlayer = this.physics.add
         .image(
-          600,
-          400,
+          instance.current_position.posX,
+          instance.current_position.posY,
           `ball${index + 1}`
         )
         .setScale(0.015);
