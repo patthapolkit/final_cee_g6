@@ -61,12 +61,14 @@ joinRoomButton.addEventListener("click", async () => {
         posY: 100,
       },
     });
+
+    // create player control instance
     await createPlayerControl({
       player: userId,
       power: 0,
       angle: 0,
       currentMap: 1,
-      Status: "not_swing",
+      status: "not_swing",
     });
 
     nameInput.value = "";
@@ -110,12 +112,14 @@ createRoomButton.addEventListener("click", async () => {
       ],
     });
     const roomId = createdRoom.room._id;
+
+    // create player control instance
     await createPlayerControl({
       player: userId,
       power: 0,
       angle: 0,
       currentMap: 1,
-      Status: "not_swing",
+      status: "not_swing",
     });
 
     nameInput.value = "";

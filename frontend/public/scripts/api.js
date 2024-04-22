@@ -51,24 +51,31 @@ export async function createPlayerControl(instance) {
   return response;
 }
 
-export async function getPlayerControlbyId(id){
-  const instance = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`).then((r) => r.json());
+export async function getPlayerControlbyId(id) {
+  const instance = await fetch(
+    `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
+  ).then((r) => r.json());
   return instance;
 }
 
-export async function getAllPlayerControl(){
-  const instances = await fetch(`${BACKEND_URL}/api/playerControl/`).then((r) => r.json());
+export async function getAllPlayerControl() {
+  const instances = await fetch(`${BACKEND_URL}/api/playerControl/`).then((r) =>
+    r.json()
+  );
   return instances;
 }
 
-export async function updatePlayerControlbyId(id, instance){
-  await fetch(`${BACKEND_URL}/api/playerControl/upDatePlayerById?playerId=${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(instance),
-  });
+export async function updatePlayerControlbyId(id, instance) {
+  await fetch(
+    `${BACKEND_URL}/api/playerControl/upDatePlayerById?playerId=${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(instance),
+    }
+  );
 }
 
 //--------------------Instance------------------------------
@@ -94,12 +101,15 @@ export async function updateInstance(id, instance) {
 }
 
 export async function getInstance(roomId, playerId) {
-  const instance = await fetch(`${BACKEND_URL}/api/room/instanceGet/${roomId}?player=${playerId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const instance = await fetch(
+    `${BACKEND_URL}/api/room/instanceGet/${roomId}?player=${playerId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   return instance.json();
 }
 
