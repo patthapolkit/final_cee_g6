@@ -98,7 +98,7 @@ export const updatePlayerControlbyId = async (req, res) => {
 };
 
 //@desc    Delete control by playerId
-//@route   DELETE /api/room/deletePlayerById
+//@route   DELETE /api/playerControl/deletePlayerById
 export const deletePlayerControlbyId = async (req, res) => {
   try {
     const playerId = req.query.playerId;

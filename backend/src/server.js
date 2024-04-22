@@ -22,6 +22,11 @@ app.use("/api/user", user);
 app.use("/api/room", room);
 app.use("/api/playerControl", playerControl);
 
+app.get("/api/currentTime", (req, res) => {
+  const currentTime = new Date();
+  res.json({ currentTime: currentTime.toISOString() });
+});
+
 const PORT = process.env.PORT || 3222;
 
 // Start server
