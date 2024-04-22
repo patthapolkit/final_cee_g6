@@ -1,15 +1,15 @@
-#waiting-title {
+#waiting-container {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  padding: 20px;
+  padding: 0px 2rem;
+  gap: 1rem;
 }
 
-#waiting-title img {
-  width: 100px;
+#waiting-container img {
+  width: 10vh;
   height: auto;
-  margin-bottom: 20px;
   animation: loading 1s infinite;
 }
 
@@ -22,15 +22,17 @@
   }
 }
 
-#waiting-title h1 {
+#waiting-container h1 {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: clamp(2.1rem, 2vw + 1rem, 3rem);
   color: black;
   margin: 0;
 }
 
-#waiting-title p {
-  font-size: 1.5rem;
+#waiting-container p {
+  font-size: clamp(1.2rem, 3vw, 2rem);
   font-weight: 500;
   color: black;
+  text-align: center;
+  margin: 0;
 }
