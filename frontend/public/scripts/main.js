@@ -10,6 +10,7 @@ import {
   getUsers,
   createUser,
   getUserById,
+  createPlayerControl,
 } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
@@ -60,16 +61,17 @@ joinRoomButton.addEventListener("click", async () => {
         posY: 100,
       },
     });
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0,
+      currentMap : 1,
+      Status : "not_swing"
+    })
 
     nameInput.value = "";
     roomNumberInput.value = "";
-    // save user id and room id in local storage
-    window.localStorage.setItem("userId", userId);
-    window.localStorage.setItem("roomId", roomId);
-    // redirect to waiting page
-    window.location.href = "waiting.html";
-    // set backend url in local storage
-    window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
+    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
   } else {
     openErrorPopup(createdUser.message);
   }
@@ -102,14 +104,17 @@ createRoomButton.addEventListener("click", async () => {
       ],
     });
     const roomId = createdRoom.room._id;
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0,
+      currentMap : 1,
+      Status : "not_swing"
+    })
 
     nameInput.value = "";
     roomNumberInput.value = "";
-    // save user id and room id in local storage
-    window.localStorage.setItem("userId", userId);
-    window.localStorage.setItem("roomId", roomId);
-    // redirect to waiting page
-    window.location.href = "waiting.html";
+    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
   } else {
     console.log("errorrrrr");
     openErrorPopup(createdUser.message);
