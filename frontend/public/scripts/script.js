@@ -121,9 +121,10 @@ function create() {
   inputPressed = false;
   downTime = 0;
 
-  // Add timer
+  /* // Add timer
   let countdownValue = 11;
   const countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
+  const timeOutText = this.add.text(400, 300, '', { fontSize: '35px', color: '#ffffff' });
   countdownText.setOrigin(0.5);
 
   const updateCountdown = () => {
@@ -131,12 +132,47 @@ function create() {
     countdownText.setText('Time: ' + countdownValue); // Update the text
     if (countdownValue <= 0) {
         // Timer has reached zero, handle game over or other logic
-        clearInterval(countdownInterval); // Stop the countdown
+        //clearInterval(countdownInterval); // Stop the countdown
+        countdownValue = 11
+      
     }
   };
   
   // Update the countdown timer every second (1000 milliseconds)
-  const countdownInterval = setInterval(updateCountdown, 1000);
+  const countdownInterval = setInterval(updateCountdown, 1000); */
+
+  // Initialize countdown timer variables
+  let countdownValue = 10; // Initial countdown value in seconds
+  let countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
+  let screenText = this.add.text(400, 300, '', { fontSize: '48px', color: '#ffffff' })
+  screenText.setOrigin(0.5);
+  countdownText.setOrigin(0.5);
+
+  // Function to update the countdown timer
+  const updateCountdown = () => {
+      countdownValue--; // Decrease countdown value
+      countdownText.setText('Time: ' + countdownValue); // Update the text
+
+      // If countdown reaches zero
+      if (countdownValue <= 0) {
+          clearInterval(countdownInterval); // Stop the countdown
+          countdownText.setText(''); 
+          screenText.setText('Time out!')// Show "Time out!" message
+          setTimeout(() => {
+              screenText.setText('Next player turn!'); // Show "Next player turn" message after 2 seconds
+              setTimeout(() => {
+                  // Reset countdown and start again
+                  countdownValue = 10;
+                  countdownText.setText('Time: ' + countdownValue);
+                  screenText.setText('');
+                  countdownInterval = setInterval(updateCountdown, 1000);
+              }, 2000);
+          }, 2000);
+      }
+  };
+
+  // Update the countdown timer every second (1000 milliseconds)
+  let countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 function scored(player, hole) {
