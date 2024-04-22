@@ -56,6 +56,10 @@ let downTime;
 let inputPressed;
 let currentPlayerIdx = 0; // index 
 let inHole = 0;
+let countdownInterval;
+let countdownText;
+let screenText;
+let countdownValue;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -103,6 +107,49 @@ function loadLevel(levelNumber) {
     this.physics.add.overlap(myPlayer, hole, scored, null, this);
     setMode.call(this, 1);
   });
+
+
+  // Add timer text
+  countdownValue = 10; // Initial countdown value in seconds
+  countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
+  screenText = this.add.text(400, 300, '', { fontSize: '48px', color: '#ffffff' })
+  screenText.setOrigin(0.5);
+  countdownText.setOrigin(0.5);
+
+  // Update the countdown timer immediately and then every second (1000 milliseconds)
+  updateCountdown.call(this);
+  countdownInterval = setInterval(updateCountdown.bind(this), 1000);
+}
+
+// Function to update the countdown timer
+function updateCountdown() {
+  console.log(countdownValue);
+  countdownText.setText('Time: ' + countdownValue); // Update the text
+  countdownValue--; // Decrease countdown value
+
+  // If countdown reaches zero
+  if (countdownValue <= -1) {
+      clearInterval(countdownInterval); // Stop the countdown
+      countdownText.setText(''); 
+      screenText.setText('Time out!')// Show "Time out!" message
+      this.input.enabled = false;
+      arrow.setVisible(false);
+
+      setTimeout(() => {
+          screenText.setText('Next player turn!'); // Show "Next player turn" message after 2 seconds
+          setTimeout(() => {
+              // Reset countdown and start again
+              countdownValue = 10;
+              countdownText.setText('Time: ' + countdownValue);
+              screenText.setText('');
+              // Update the countdown timer immediately and then every second (1000 milliseconds)
+              updateCountdown.call(this); // Call the function with the captured context
+              countdownInterval = setInterval(updateCountdown.bind(this), 1000); // Use bind to set the context
+              this.input.enabled = true;
+              arrow.setVisible(true);
+          }, 2000);
+      }, 2000);
+  }
 }
 
 function create() {
@@ -121,58 +168,6 @@ function create() {
   inputPressed = false;
   downTime = 0;
 
-  /* // Add timer
-  let countdownValue = 11;
-  const countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
-  const timeOutText = this.add.text(400, 300, '', { fontSize: '35px', color: '#ffffff' });
-  countdownText.setOrigin(0.5);
-
-  const updateCountdown = () => {
-    countdownValue--; // Decrease countdown value
-    countdownText.setText('Time: ' + countdownValue); // Update the text
-    if (countdownValue <= 0) {
-        // Timer has reached zero, handle game over or other logic
-        //clearInterval(countdownInterval); // Stop the countdown
-        countdownValue = 11
-      
-    }
-  };
-  
-  // Update the countdown timer every second (1000 milliseconds)
-  const countdownInterval = setInterval(updateCountdown, 1000); */
-
-  // Initialize countdown timer variables
-  let countdownValue = 10; // Initial countdown value in seconds
-  let countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
-  let screenText = this.add.text(400, 300, '', { fontSize: '48px', color: '#ffffff' })
-  screenText.setOrigin(0.5);
-  countdownText.setOrigin(0.5);
-
-  // Function to update the countdown timer
-  const updateCountdown = () => {
-      countdownValue--; // Decrease countdown value
-      countdownText.setText('Time: ' + countdownValue); // Update the text
-
-      // If countdown reaches zero
-      if (countdownValue <= 0) {
-          clearInterval(countdownInterval); // Stop the countdown
-          countdownText.setText(''); 
-          screenText.setText('Time out!')// Show "Time out!" message
-          setTimeout(() => {
-              screenText.setText('Next player turn!'); // Show "Next player turn" message after 2 seconds
-              setTimeout(() => {
-                  // Reset countdown and start again
-                  countdownValue = 10;
-                  countdownText.setText('Time: ' + countdownValue);
-                  screenText.setText('');
-                  countdownInterval = setInterval(updateCountdown, 1000);
-              }, 2000);
-          }, 2000);
-      }
-  };
-
-  // Update the countdown timer every second (1000 milliseconds)
-  let countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 function scored(player, hole) {
@@ -181,15 +176,16 @@ function scored(player, hole) {
     setMode.call(this,2)
     player.disableBody(true, true);
     inHole++; 
-   
-  
+    
+    // Stop timer 
+    clearInterval(countdownInterval);
+    countdownText.setText('');
+    screenText.setText('')    
     hole.disableBody(true, true);
     currentLevel++;
     loadLevel.call(this, currentLevel);
     
-   /*  hole.disableBody(true, true);
-    currentLevel++;
-    loadLevel.call(this, currentLevel); */
+
   }
 }
 
@@ -203,15 +199,18 @@ function setMode(newMode) {
     if (arrow) {
       arrow.destroy();
     }
+  
+    
   } else if (newMode === 1) {
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
+
     createArrow.call(this);
 
     getInstance(roomId, userId)
     .then(response => {
       const data = response.data;
-      console.log(data)
+      // console.log(data)
       updateInstance(roomId, {
         player: userId,
         current_swings: data.current_swings + 1,
@@ -236,6 +235,7 @@ function createArrow() {
 }
 
 function update() {
+  console.log(countdownInterval)
   if (mode === 0) {
     // if the ball is moving, ball should not be able to be controlled
     this.input.off("pointermove");
@@ -243,7 +243,22 @@ function update() {
     this.input.off("pointerup");
     // check if the ball is moving so slow that we can make it stop completely and change the mode
     if (myPlayer.body.velocity.length() < 10) {
+      // Set text after the ball stopped
+      screenText.setText('Next player turn!');
+      // Disable input events
+      this.input.enabled = false;
+      setTimeout(() => {
+        screenText.setText('');
+        countdownValue = 10;
+        updateCountdown.call(this);
+        countdownInterval = setInterval(updateCountdown.bind(this), 1000);
+        // Enable input events after the text disappears
+        this.input.enabled = true;
+        arrow.setVisible(true);
+      }, 2000);
+      // set mode
       setMode.call(this, 1);
+      arrow.setVisible(false);
     }
   } else if (mode === 1) {
     // check if ball is mode 1 and the player turn is userId
@@ -251,9 +266,7 @@ function update() {
       angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
       arrow.rotation = angle;
       myPlayer.rotation = angle;
-
-      //console.log(typeof(angle))
-    
+      
     });
     this.input.on("pointerdown", (pointer) => {
       inputPressed = true;
@@ -269,9 +282,10 @@ function update() {
       }
     } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
       power = powerCalc.call(this) * 1.5;
-      // console.log(angle, power, myPlayer.body.velocity)
-      console.log(players)
       this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
+      clearInterval(countdownInterval);
+      countdownText.setText('');
+      screenText.setText('');
       
       downTime = 0;
       setMode.call(this, 0);
