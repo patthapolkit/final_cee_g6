@@ -1,5 +1,7 @@
 import { BACKEND_URL } from "./config.js";
 
+//------------------------Room--------------------------
+
 export async function createRoom(room) {
   const response = await fetch(`${BACKEND_URL}/api/room`, {
     method: "POST",
@@ -35,6 +37,41 @@ export async function deleteRoomById(id) {
     method: "DELETE",
   });
 }
+
+//------------------------PlayerController--------------------------
+
+export async function createPlayerControl(instance) {
+  const response = await fetch(`${BACKEND_URL}/api/playerControl/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(instance),
+  }).then((r) => r.json());
+  return response;
+}
+
+export async function getPlayerControlbyId(id){
+  const instance = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`).then((r) => r.json());
+  return instance;
+}
+
+export async function getAllPlayerControl(){
+  const instances = await fetch(`${BACKEND_URL}/api/playerControl/`).then((r) => r.json());
+  return instances;
+}
+
+export async function updatePlayerControlbyId(id, instance){
+  await fetch(`${BACKEND_URL}/api/playerControl/upDatePlayerById?playerId=${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(instance),
+  });
+}
+
+//--------------------Instance------------------------------
 
 export async function createInstance(id, instance) {
   await fetch(`${BACKEND_URL}/api/room/instanceCreate/${id}`, {
@@ -75,6 +112,8 @@ export async function deleteInstance(id, instance) {
     body: JSON.stringify(instance),
   });
 }
+
+//-------------------------User---------------------------------------------
 
 export async function getUsers() {
   const users = await fetch(`${BACKEND_URL}/api/user`).then((r) => r.json());

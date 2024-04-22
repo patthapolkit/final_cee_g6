@@ -60,6 +60,7 @@ let countdownInterval;
 let countdownText;
 let screenText;
 let countdownValue;
+let playerNumber = 4 ;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -236,67 +237,95 @@ function createArrow() {
 
 function update() {
   console.log(countdownInterval)
-  if (mode === 0) {
-    // if the ball is moving, ball should not be able to be controlled
-    this.input.off("pointermove");
-    this.input.off("pointerdown");
-    this.input.off("pointerup");
-    // check if the ball is moving so slow that we can make it stop completely and change the mode
-    if (myPlayer.body.velocity.length() < 10) {
-      // Set text after the ball stopped
-      screenText.setText('Next player turn!');
-      // Disable input events
-      this.input.enabled = false;
-      setTimeout(() => {
-        screenText.setText('');
-        countdownValue = 10;
-        updateCountdown.call(this);
-        countdownInterval = setInterval(updateCountdown.bind(this), 1000);
-        // Enable input events after the text disappears
-        this.input.enabled = true;
-        arrow.setVisible(true);
-      }, 2000);
-      // set mode
-      setMode.call(this, 1);
-      arrow.setVisible(false);
-    }
-  } else if (mode === 1) {
-    // check if ball is mode 1 and the player turn is userId
-    this.input.on("pointermove", (pointer) => {
-      angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
-      arrow.rotation = angle;
-      myPlayer.rotation = angle;
-      
-    });
-    this.input.on("pointerdown", (pointer) => {
-      inputPressed = true;
-    });
-    this.input.on("pointerup", (pointer) => {
-      inputPressed = false;
-    });
-    if (inputPressed) {
-      if (downTime === 0) {
-        downTime = this.time.now;
-      } else {
-        arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
+  if (turnIndex[currentPlayerIdx] === userId){
+    if (mode === 0) {
+      // if the ball is moving, ball should not be able to be controlled
+      this.input.off("pointermove");
+      this.input.off("pointerdown");
+      this.input.off("pointerup");
+      // check if the ball is moving so slow that we can make it stop completely and change the mode
+      if (myPlayer.body.velocity.length() < 10) {
+        // Set text after the ball stopped
+        currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber
+        screenText.setText('Next player turn!');
+        // Disable input events
+        this.input.enabled = false;
+        setTimeout(() => {
+          screenText.setText('');
+          countdownValue = 10;
+          updateCountdown.call(this);
+          countdownInterval = setInterval(updateCountdown.bind(this), 1000);
+          // Enable input events after the text disappears
+          this.input.enabled = true;
+          arrow.setVisible(true);
+        }, 2000);
+        // set mode
+        setMode.call(this, 1);
+        arrow.setVisible(false);
       }
-    } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
-      power = powerCalc.call(this) * 1.5;
-      this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
-      clearInterval(countdownInterval);
-      countdownText.setText('');
-      screenText.setText('');
-      
-      downTime = 0;
-      setMode.call(this, 0);
+    } else if (mode === 1) {
+      // check if ball is mode 1 and the player turn is userId
+      this.input.on("pointermove", (pointer) => {
+        angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
+        arrow.rotation = angle;
+        myPlayer.rotation = angle;
+        
+      });
+      this.input.on("pointerdown", (pointer) => {
+        inputPressed = true;
+      });
+      this.input.on("pointerup", (pointer) => {
+        inputPressed = false;
+      });
+      if (inputPressed) {
+        if (downTime === 0) {
+          downTime = this.time.now;
+        } else {
+          arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
+        }
+      } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
+        power = powerCalc.call(this) * 1.5;
+        this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
+        clearInterval(countdownInterval);
+        countdownText.setText('');
+        screenText.setText('');
+        
+        downTime = 0;
+        setMode.call(this, 0);
+      }
+    } else if (mode === 2){
+      //when score is called
+      this.input.off("pointermove");
+      this.input.off("pointerdown");
+      this.input.off("pointerup");
     }
-  } else if (mode === 2){
-    //when score is called
-    this.input.off("pointermove");
-    this.input.off("pointerdown");
-    this.input.off("pointerup");
+  }else{
+    inputOtherPlayer().then(() => {
+      //console.log(players[turnIndex[currentPlayerIdx]])
+      this.physics.velocityFromRotation(angle, power, players[turnIndex[currentPlayerIdx]].body.velocity);
+      currentPlayerIdx = (currentPlayerIdx+1) % playerNumber
+    });
   }
 }
+
+async function inputOtherPlayer() {
+  console.log(userId)
+  const response = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${userId}`);
+  const data = await response.json();
+
+  // Find the instance corresponding to the specific person
+  const power = data.data.power
+  const angle = data.data.angle
+  // console.log(power,angle)
+  updatePowerAndAngle(power,angle);
+}
+
+function updatePowerAndAngle(newPower, newAngle) {
+  // Update global variables with the received power and angle data
+  power = newPower;
+  angle = newAngle;
+}
+
 
 async function initAllPlayers() {
   const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);
