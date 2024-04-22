@@ -111,7 +111,6 @@ createRoomButton.addEventListener("click", async () => {
     // redirect to waiting page
     window.location.href = "waiting.html";
   } else {
-    console.log("errorrrrr");
     openErrorPopup(createdUser.message);
   }
 });

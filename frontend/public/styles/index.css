@@ -1,47 +1,83 @@
-body {
+html {
+  background: url("../assets/bg.jpg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  overflow: hidden;
   font-family: "JetBrains Mono", monospace;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  margin: 0;
-  background-color: #87ceeb;
-  flex-direction: column;
-}
-
-.iconImage {
-  max-width: 200px;
-  margin-bottom: 20px;
-}
-
-.iconImage img {
-  max-width: 100%;
-  height: auto;
 }
 
 .center {
-  background-color: #82c084;
-  display: block;
+  background: url("../assets/bg-join.jpg") center center fixed;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  padding: 20px;
-  border: 2px solid #000;
+  border: 2px solid #5a6762;
   border-radius: 10px;
-  max-width: 80%;
+  gap: 40px;
+  margin: 0px 40px;
+  padding: 40px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+@media screen and (max-width: 768px) {
+  .center {
+    flex-direction: column;
+    gap: 20px;
+    margin: 0px 20px;
+    padding: 20px;
+  }
+}
+
+#iconImage {
+  width: 200px;
+  height: 200px;
+}
+
+#gameTitle {
+  font-family: "Jersey 25", sans-serif;
+  font-size: 4rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
 }
 
 .registerBox {
   display: flex;
+  width: 100%;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
 }
 
-.registerBox input,
-.registerBox button {
+.inputBox {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 5px;
+}
+
+.buttonBox {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 5px;
+}
+
+.inputBox input,
+.buttonBox button {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
@@ -49,25 +85,44 @@ body {
   box-sizing: border-box;
   margin-top: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: "JetBrains Mono", monospace;
 }
 
-.registerBox button {
+.inputBox input:focus {
+  outline: 1px solid #5a6762;
+}
+
+.buttonBox button {
   background-color: #f0f0f0;
   cursor: pointer;
 }
 
-.registerBox button:hover {
+.buttonBox button:hover {
   background-color: #ccc;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.registerBox input::placeholder {
-  font-family: "JetBrains Mono", monospace;
+#joinRoomButton {
+  background-color: #5a6762;
+  border: none;
+  color: white;
 }
 
-.registerBox input:focus {
-  outline: 1px solid #000;
+#joinRoomButton:hover {
+  background-color: #3f4a46;
 }
+
+#createRoomButton {
+  background-color: #5a6762;
+  border: none;
+  color: white;
+}
+
+#createRoomButton:hover {
+  background-color: #3f4a46;
+}
+
+/* Popup */
 
 .error-popup {
   display: none;
@@ -87,19 +142,13 @@ body {
 
 .close-btn {
   position: absolute;
-  top: -25px;
-  left: -15px;
+  top: -10px;
+  left: -5px;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 30px;
 }
 
 #errorText {
-  margin: 0;
-}
-
-#gameTitle {
-  font-family: "Jersey 25", sans-serif;
-  font-size: 4rem;
-  color: #fff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0px 0px 0px 25px;
+  text-transform: capitalize;
 }
