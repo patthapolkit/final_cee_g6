@@ -147,3 +147,24 @@ export async function getUserById(id) {
   );
   return user;
 }
+
+export async function fetchTime() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/currentTime`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch server time');
+    }
+    const data = await response.json();
+    return new Date(data.currentTime);
+  } catch (error) {
+    console.error('Error fetching server time:', error);
+    return null;
+  }
+}
+
+export async function getTick() {
+  const serverTime = await fetchTime();
+  if (serverTime) {
+    return serverTime.getTime();
+  }
+}

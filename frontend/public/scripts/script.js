@@ -1,4 +1,4 @@
-import { updateInstance, getInstance,updatePlayerControlbyId,getPlayerControlbyId,getAllPlayerControl,createPlayerControl } from "./api.js";
+import { updateInstance, getInstance,updatePlayerControlbyId,getPlayerControlbyId,getAllPlayerControl,createPlayerControl, getTick, fetchTime } from "./api.js";
 
 import { BACKEND_URL } from "./config.js";
 
@@ -62,6 +62,9 @@ let countdownText;
 let screenText;
 let countdownValue;
 let playerNumber = 4;
+let scene;
+let currentTick;
+let lastTick;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -76,6 +79,7 @@ function preload() {
 
   // Load obstacles JSON
   this.load.json("levels", "../assets/levels.json");
+  scene = this;
 }
 
 function loadLevel(levelNumber) {
@@ -104,14 +108,15 @@ function loadLevel(levelNumber) {
     .setScale(holeData.scale);
   hole.setSize(hole.width * 0.2, hole.height * 0.2);
 
+  fetchLastTick();
   // Init all players
   initAllPlayers.call(this).then(() => {
-    this.physics.add.overlap(myPlayer, hole, scored, null, this);
+    turnIndex.forEach(id => {
+      this.physics.add.overlap(players[id], hole, scored, null, this);
+    });
     setMode.call(this, 1);
   });
 
-  // Add timer text
-  countdownValue = 10; // Initial countdown value in seconds
   countdownText = this.add.text(100, 18, "", {
     fontSize: "35px",
     color: "#ffffff",
@@ -122,41 +127,6 @@ function loadLevel(levelNumber) {
   });
   screenText.setOrigin(0.5);
   countdownText.setOrigin(0.5);
-
-  // Update the countdown timer immediately and then every second (1000 milliseconds)
-  updateCountdown.call(this);
-  countdownInterval = setInterval(updateCountdown.bind(this), 1000);
-}
-
-// Function to update the countdown timer
-function updateCountdown() {
-  //console.log(countdownValue);
-  countdownText.setText("Time: " + countdownValue); // Update the text
-  countdownValue--; // Decrease countdown value
-
-  // If countdown reaches zero
-  if (countdownValue <= -1) {
-    clearInterval(countdownInterval); // Stop the countdown
-    countdownText.setText("");
-    screenText.setText("Time out!"); // Show "Time out!" message
-    this.input.enabled = false;
-    arrow.setVisible(false);
-
-    setTimeout(() => {
-      screenText.setText("Next player turn!"); // Show "Next player turn" message after 2 seconds
-      setTimeout(() => {
-        // Reset countdown and start again
-        countdownValue = 10;
-        countdownText.setText("Time: " + countdownValue);
-        screenText.setText("");
-        // Update the countdown timer immediately and then every second (1000 milliseconds)
-        updateCountdown.call(this); // Call the function with the captured context
-        countdownInterval = setInterval(updateCountdown.bind(this), 1000); // Use bind to set the context
-        this.input.enabled = true;
-        arrow.setVisible(true);
-      }, 2000);
-    }, 2000);
-  }
 }
 
 function create() {
@@ -179,19 +149,16 @@ function create() {
 function scored(player, hole) {
   // Check if the player is moving slow enough to enter the hole
   if (player.body.velocity.length() <= 250) {
-    setMode.call(this, 2);
     player.disableBody(true, true);
     inHole++;
-
-    // Stop timer
-    clearInterval(countdownInterval);
-    countdownText.setText("");
-    screenText.setText("");
-    hole.disableBody(true, true);
-    currentLevel++;
-    
-    loadLevel.call(this, currentLevel);
-    
+    if (inHole == 4){
+      // Stop timer
+      countdownText.setText("");
+      screenText.setText("");
+      hole.disableBody(true, true);
+      currentLevel++;
+      loadLevel.call(this, currentLevel);
+    }
   }
 }
 
@@ -246,7 +213,7 @@ function checkStop() {
 
 function update() {
   //console.log(countdownInterval);
-  console.log(mode)
+  fetchCurTick();
   if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
       this.input.off("pointermove");
@@ -254,70 +221,87 @@ function update() {
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
       if (checkStop()) {
-        // Set text after the ball stopped
-        screenText.setText("Stanby Phase");
-        // Disable input events
-        this.input.enabled = false;
-        setTimeout(() => {
-          screenText.setText("");
-          countdownValue = 10;
-          updateCountdown.call(this);
-          countdownInterval = setInterval(updateCountdown.bind(this), 1000);
-          // Enable input events after the text disappears
-          this.input.enabled = true;
-          arrow.setVisible(true);
-        }, 2000);
-        // set mode
+        fetchLastTick();
         setMode.call(this, 1);
-        arrow.setVisible(false);
       }
     } else if (mode === 1) {
       // check if ball is mode 1 and the player turn is userId
-      this.input.on("pointermove", (pointer) => {
-        angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
-        arrow.rotation = angle;
-        myPlayer.rotation = angle;
-      });
-      this.input.on("pointerdown", (pointer) => {
-        inputPressed = true;
-      });
-      this.input.on("pointerup", (pointer) => {
-        inputPressed = false;
-      });
-      if (inputPressed) {
-        if (downTime === 0) {
-          downTime = this.time.now;
-        } else {
-          arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
-        }
-      } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
-        console.log("enter")
-        power = powerCalc.call(this) * 1.5;
-
-        updatePlayerControlbyId(userId, {
-          angle: angle, // Send the angle data
-          power: power, // Send the power data
-          currentMap : currentLevel,
-          status : "swing"
-
+      // console.log((currentTick - lastTick)/1000)
+      console.log(currentTick)
+      console.log(lastTick)
+      console.log((currentTick - lastTick)/1000)
+      screenText.setText('' + (currentTick - lastTick)/1000)
+      if ((currentTick - lastTick)/1000 >= 10) {
+        console.log('change')
+        fetchLastTick();
+        setMode.call(this, 2)
+      } else {
+        console.log('start')
+        this.input.on("pointermove", (pointer) => {
+          angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
+          arrow.rotation = angle;
+          myPlayer.rotation = angle;
         });
-        clearInterval(countdownInterval);
-        countdownText.setText("");
-        screenText.setText("");
-        downTime = 0;
-        setMode.call(this, 2);
+        this.input.on("pointerdown", (pointer) => {
+          inputPressed = true;
+        });
+        this.input.on("pointerup", (pointer) => {
+          inputPressed = false;
+        });
+        if (inputPressed) {
+          if (downTime === 0) {
+            downTime = this.time.now;
+          } else {
+            arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
+          }
+        } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
+          console.log("enter")
+          this.input.enabled = false ;
+          this.input.off("pointermove");
+          this.input.off("pointerdown");
+          this.input.off("pointerup");
+          arrow.setVisible(false) ; 
+          power = powerCalc.call(this) * 1.5;
+
+          updatePlayerControlbyId(userId, {
+            angle: angle, // Send the angle data
+            power: power, // Send the power data
+            currentMap : currentLevel,
+            status : "swing"
+
+          });
+          
+          downTime = 0;
+        }
+        //setMode.call(this, 2);
       }
     } else if (mode === 2) {
       //when score is called
-      this.input.off("pointermove");
-      this.input.off("pointerdown");
-      this.input.off("pointerup");
       turnIndex.forEach(id => {
-        
         inputOtherPlayer.call(this,id)
       });
-      //setMode.call(this,0)
+      updatePlayerControlbyId(userId, {
+        angle: 0, // Send the angle data
+        power: 0, // Send the power data
+        currentMap : currentLevel,
+        status : "not_swing"
+      });
+
+      setMode(this, 0);
     }
+}
+
+function fetchCurTick() {
+  // Fetch the current server time and set it to currentTick
+  getTick().then((serverTime) => {
+    currentTick = serverTime;
+  })
+}
+
+function fetchLastTick() {
+  getTick().then((serverTime) => {
+    lastTick = serverTime;
+  })
 }
 
 async function inputOtherPlayer(id) {
@@ -399,3 +383,4 @@ async function initAllPlayers() {
   // Resolve the promise to indicate that initialization is complete
   return Promise.resolve();
 }
+
