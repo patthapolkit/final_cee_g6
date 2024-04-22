@@ -63,7 +63,13 @@ joinRoomButton.addEventListener("click", async () => {
 
     nameInput.value = "";
     roomNumberInput.value = "";
-    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+    // save user id and room id in local storage
+    window.localStorage.setItem("userId", userId);
+    window.localStorage.setItem("roomId", roomId);
+    // redirect to waiting page
+    window.location.href = "waiting.html";
+    // set backend url in local storage
+    window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
   } else {
     openErrorPopup(createdUser.message);
   }
@@ -99,7 +105,11 @@ createRoomButton.addEventListener("click", async () => {
 
     nameInput.value = "";
     roomNumberInput.value = "";
-    window.location.href = `/game.html?userId=${userId}&roomId=${roomId}`;
+    // save user id and room id in local storage
+    window.localStorage.setItem("userId", userId);
+    window.localStorage.setItem("roomId", roomId);
+    // redirect to waiting page
+    window.location.href = "waiting.html";
   } else {
     console.log("errorrrrr");
     openErrorPopup(createdUser.message);

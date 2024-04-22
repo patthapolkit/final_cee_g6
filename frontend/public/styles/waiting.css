@@ -1,0 +1,36 @@
+#waiting-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#waiting-title img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 20px;
+  animation: loading 1s infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#waiting-title h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: black;
+  margin: 0;
+}
+
+#waiting-title p {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: black;
+}
