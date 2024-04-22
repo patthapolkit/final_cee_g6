@@ -96,3 +96,34 @@ export const updatePlayerControlbyId = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+//@desc    Delete control by playerId
+//@route   DELETE /api/room/deletePlayerById
+export const deletePlayerControlbyId = async (req, res) => {
+  try {
+    const playerId = req.query.playerId;
+    if (!playerId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Player ID is required" });
+    }
+
+    let playerControl = await PlayerControl.findOne({ player: playerId });
+
+    if (!playerControl) {
+      return res.status(404).json({
+        success: false,
+        message: "Cannot find player control for the provided player ID",
+      });
+    }
+
+    await PlayerControl.deleteOne({ player: playerId });
+    res.status(200).json({
+      success: true,
+      message: "Player control deleted",
+    });
+  } catch (error) {
+    console.log(error.stack);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
