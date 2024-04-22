@@ -31,8 +31,8 @@ if (!roomId) {
 
     scale: {
       mode: Phaser.Scale.FIT,
-      parent: 'game-container',
-    } 
+      parent: "game-container",
+    },
   };
   game = new Phaser.Game(config);
   lastFetchTime = 0;
@@ -54,22 +54,22 @@ let angle;
 let power;
 let downTime;
 let inputPressed;
-let currentPlayerIdx = 0; // index 
+let currentPlayerIdx = 0; // index
 let inHole = 0;
 let countdownInterval;
 let countdownText;
 let screenText;
 let countdownValue;
-let playerNumber = 4 ;
+let playerNumber = 4;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
   this.load.image("wooden_v", "../assets/wooden_v.png");
   this.load.image("wooden_h", "../assets/wooden_h.png");
-  this.load.image("ball1", "../assets/ball.png");
-  this.load.image("ball2", "../assets/ball.png");
-  this.load.image("ball3", "../assets/ball.png");
-  this.load.image("ball4", "../assets/ball.png");
+  this.load.image("ball1", "../assets/ball_black.png");
+  this.load.image("ball2", "../assets/ball_blue.png");
+  this.load.image("ball3", "../assets/ball_red.png");
+  this.load.image("ball4", "../assets/ball_yellow.png");
   this.load.image("hole", "../assets/hole.png");
   this.load.image("arrow", "../assets/arrow.png");
 
@@ -109,11 +109,16 @@ function loadLevel(levelNumber) {
     setMode.call(this, 1);
   });
 
-
   // Add timer text
   countdownValue = 10; // Initial countdown value in seconds
-  countdownText = this.add.text(100, 18, '', { fontSize: '35px', color: '#ffffff' });
-  screenText = this.add.text(400, 300, '', { fontSize: '48px', color: '#ffffff' })
+  countdownText = this.add.text(100, 18, "", {
+    fontSize: "35px",
+    color: "#ffffff",
+  });
+  screenText = this.add.text(400, 300, "", {
+    fontSize: "48px",
+    color: "#ffffff",
+  });
   screenText.setOrigin(0.5);
   countdownText.setOrigin(0.5);
 
@@ -125,31 +130,31 @@ function loadLevel(levelNumber) {
 // Function to update the countdown timer
 function updateCountdown() {
   console.log(countdownValue);
-  countdownText.setText('Time: ' + countdownValue); // Update the text
+  countdownText.setText("Time: " + countdownValue); // Update the text
   countdownValue--; // Decrease countdown value
 
   // If countdown reaches zero
   if (countdownValue <= -1) {
-      clearInterval(countdownInterval); // Stop the countdown
-      countdownText.setText(''); 
-      screenText.setText('Time out!')// Show "Time out!" message
-      this.input.enabled = false;
-      arrow.setVisible(false);
+    clearInterval(countdownInterval); // Stop the countdown
+    countdownText.setText("");
+    screenText.setText("Time out!"); // Show "Time out!" message
+    this.input.enabled = false;
+    arrow.setVisible(false);
 
+    setTimeout(() => {
+      screenText.setText("Next player turn!"); // Show "Next player turn" message after 2 seconds
       setTimeout(() => {
-          screenText.setText('Next player turn!'); // Show "Next player turn" message after 2 seconds
-          setTimeout(() => {
-              // Reset countdown and start again
-              countdownValue = 10;
-              countdownText.setText('Time: ' + countdownValue);
-              screenText.setText('');
-              // Update the countdown timer immediately and then every second (1000 milliseconds)
-              updateCountdown.call(this); // Call the function with the captured context
-              countdownInterval = setInterval(updateCountdown.bind(this), 1000); // Use bind to set the context
-              this.input.enabled = true;
-              arrow.setVisible(true);
-          }, 2000);
+        // Reset countdown and start again
+        countdownValue = 10;
+        countdownText.setText("Time: " + countdownValue);
+        screenText.setText("");
+        // Update the countdown timer immediately and then every second (1000 milliseconds)
+        updateCountdown.call(this); // Call the function with the captured context
+        countdownInterval = setInterval(updateCountdown.bind(this), 1000); // Use bind to set the context
+        this.input.enabled = true;
+        arrow.setVisible(true);
       }, 2000);
+    }, 2000);
   }
 }
 
@@ -168,25 +173,22 @@ function create() {
   loadLevel.call(this, 1);
   inputPressed = false;
   downTime = 0;
-
 }
 
 function scored(player, hole) {
   // Check if the player is moving slow enough to enter the hole
   if (player.body.velocity.length() <= 250) {
-    setMode.call(this,2)
+    setMode.call(this, 2);
     player.disableBody(true, true);
-    inHole++; 
-    
-    // Stop timer 
+    inHole++;
+
+    // Stop timer
     clearInterval(countdownInterval);
-    countdownText.setText('');
-    screenText.setText('')    
+    countdownText.setText("");
+    screenText.setText("");
     hole.disableBody(true, true);
     currentLevel++;
     loadLevel.call(this, currentLevel);
-    
-
   }
 }
 
@@ -200,16 +202,13 @@ function setMode(newMode) {
     if (arrow) {
       arrow.destroy();
     }
-  
-    
   } else if (newMode === 1) {
     // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
 
     createArrow.call(this);
 
-    getInstance(roomId, userId)
-    .then(response => {
+    getInstance(roomId, userId).then((response) => {
       const data = response.data;
       // console.log(data)
       updateInstance(roomId, {
@@ -222,8 +221,8 @@ function setMode(newMode) {
         },
       });
     });
-  //mode when ball fall in ahole
-  }else if (newMode === 2){
+    //mode when ball fall in ahole
+  } else if (newMode === 2) {
     if (arrow) {
       arrow.destroy();
     }
@@ -236,8 +235,8 @@ function createArrow() {
 }
 
 function update() {
-  console.log(countdownInterval)
-  if (turnIndex[currentPlayerIdx] === userId){
+  console.log(countdownInterval);
+  if (turnIndex[currentPlayerIdx] === userId) {
     if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
       this.input.off("pointermove");
@@ -246,12 +245,12 @@ function update() {
       // check if the ball is moving so slow that we can make it stop completely and change the mode
       if (myPlayer.body.velocity.length() < 10) {
         // Set text after the ball stopped
-        currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber
-        screenText.setText('Next player turn!');
+        currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber;
+        screenText.setText("Next player turn!");
         // Disable input events
         this.input.enabled = false;
         setTimeout(() => {
-          screenText.setText('');
+          screenText.setText("");
           countdownValue = 10;
           updateCountdown.call(this);
           countdownInterval = setInterval(updateCountdown.bind(this), 1000);
@@ -269,7 +268,6 @@ function update() {
         angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
         arrow.rotation = angle;
         myPlayer.rotation = angle;
-        
       });
       this.input.on("pointerdown", (pointer) => {
         inputPressed = true;
@@ -287,37 +285,43 @@ function update() {
         power = powerCalc.call(this) * 1.5;
         this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
         clearInterval(countdownInterval);
-        countdownText.setText('');
-        screenText.setText('');
-        
+        countdownText.setText("");
+        screenText.setText("");
+
         downTime = 0;
         setMode.call(this, 0);
       }
-    } else if (mode === 2){
+    } else if (mode === 2) {
       //when score is called
       this.input.off("pointermove");
       this.input.off("pointerdown");
       this.input.off("pointerup");
     }
-  }else{
+  } else {
     inputOtherPlayer().then(() => {
       //console.log(players[turnIndex[currentPlayerIdx]])
-      this.physics.velocityFromRotation(angle, power, players[turnIndex[currentPlayerIdx]].body.velocity);
-      currentPlayerIdx = (currentPlayerIdx+1) % playerNumber
+      this.physics.velocityFromRotation(
+        angle,
+        power,
+        players[turnIndex[currentPlayerIdx]].body.velocity
+      );
+      currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber;
     });
   }
 }
 
 async function inputOtherPlayer() {
-  console.log(userId)
-  const response = await fetch(`${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${userId}`);
+  console.log(userId);
+  const response = await fetch(
+    `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${userId}`
+  );
   const data = await response.json();
 
   // Find the instance corresponding to the specific person
-  const power = data.data.power
-  const angle = data.data.angle
+  const power = data.data.power;
+  const angle = data.data.angle;
   // console.log(power,angle)
-  updatePowerAndAngle(power,angle);
+  updatePowerAndAngle(power, angle);
 }
 
 function updatePowerAndAngle(newPower, newAngle) {
@@ -326,7 +330,6 @@ function updatePowerAndAngle(newPower, newAngle) {
   angle = newAngle;
 }
 
-
 async function initAllPlayers() {
   const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);
   const data = await response.json();
@@ -334,12 +337,12 @@ async function initAllPlayers() {
 
   data.data.Instance.map((instance, index) => {
     if (instance.player !== userId) {
-      if (players[instance.player]){
-        players[instance.player].destroy()
+      if (players[instance.player]) {
+        players[instance.player].destroy();
       }
       let player = this.physics.add
         .image(
-          instance.current_position.posX, 
+          instance.current_position.posX,
           instance.current_position.posY,
           `ball${index + 1}`
         )
@@ -354,15 +357,11 @@ async function initAllPlayers() {
       turnIndex[idx] = instance.player;
       idx++;
     } else {
-      if (myPlayer){
-        myPlayer.destroy()
+      if (myPlayer) {
+        myPlayer.destroy();
       }
       myPlayer = this.physics.add
-        .image(
-          600,
-          400,
-          `ball${index + 1}`
-        )
+        .image(600, 400, `ball${index + 1}`)
         .setScale(0.015);
       myPlayer.setBounce(0.5);
       myPlayer.setDamping(true);
@@ -374,7 +373,6 @@ async function initAllPlayers() {
       turnIndex[idx] = userId;
       idx++;
     }
-    
   });
 
   // Add colliders between all players
