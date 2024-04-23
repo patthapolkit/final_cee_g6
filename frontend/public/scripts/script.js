@@ -74,6 +74,9 @@ function preload() {
 }
 
 function loadLevel(levelNumber) {
+  if (loadLevel > 3) {
+    window.location.href = "/leaderboard.html";
+  }
   // Destroy previous arrow and hole
   if (myPlayer) {
     myPlayer.destroy();
@@ -225,10 +228,6 @@ function update() {
     this.input.off("pointermove");
     this.input.off("pointerdown");
     this.input.off("pointerup");
-  }
-
-  if (currentLevel > 3) {
-    window.location.href = "/leaderboard.html";
   }
 }
 
