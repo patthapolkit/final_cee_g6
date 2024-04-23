@@ -27,7 +27,7 @@ if (!roomId) {
       default: "arcade",
       arcade: {
         gravity: { x: 0, y: 0 },
-        debug: true,
+        debug: false,
       },
     },
     scene: {
@@ -225,6 +225,10 @@ function update() {
     this.input.off("pointermove");
     this.input.off("pointerdown");
     this.input.off("pointerup");
+  }
+
+  if (currentLevel > 3) {
+    window.location.href = "/leaderboard.html";
   }
 }
 
