@@ -4,6 +4,9 @@ const playerControlSchema = new mongoose.Schema({
   player: {
     type: mongoose.Schema.ObjectId,
   },
+  signal: {
+    type: String,
+  },
   currentMap: {
     type: Number,
     required: true,
@@ -20,6 +23,12 @@ const playerControlSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  currentTime:{
+    type:Number
+  },
+  lastTime:{
+    type:Number
+  }
 });
 
 const playerControl = mongoose.model("PlayerControl", playerControlSchema);

@@ -49,7 +49,7 @@ let players = {};
 let turnIndex = new Array(4);
 let hole;
 let arrow = null;
-let mode = 1;
+let mode = 3;
 let currentLevel = 1;
 let angle;
 let power;
@@ -65,6 +65,9 @@ let playerNumber = 4;
 let scene;
 let currentTick;
 let lastTick;
+let nextState = false ;
+let currentTime = 0;
+let lastTime = 0
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -115,6 +118,7 @@ function loadLevel(levelNumber) {
       this.physics.add.overlap(players[id], hole, scored, null, this);
     });
     setMode.call(this, 1);
+    console.log("create");
   });
 
   countdownText = this.add.text(125, 18, "", {
@@ -176,6 +180,7 @@ function setMode(newMode) {
     }
   } else if (newMode === 1) {
     // set ball velocity to 0
+    console.log(myPlayer)
     myPlayer.setVelocity(0, 0);
 
     createArrow.call(this);
@@ -215,10 +220,23 @@ function checkStop() {
 
 function update() {
   fetchCurTick();
-  console.log(currentTick);
-  if (mode === 0) {
+  console.log(mode)
+  //console.log(currentTick);
+  if (turnIndex[0] === userId){
+    if (2 - (currentTick - lastTick)/1000 <= 0) {
+      updatePlayerControlbyId(userId, {
+        angle: 0, // Send the angle data
+        power: 0, // Send the power data
+        currentMap : currentLevel,
+        status : "not_swing",
+        signal : "ready",
+        currentTime: currentTick,
+        lastTime: lastTick
+      });
+    }
+    if (mode === 0) {
+
       // if the ball is moving, ball should not be able to be controlled
-      
       this.input.off("pointermove");
       this.input.off("pointerdown");
       this.input.off("pointerup");
@@ -228,42 +246,30 @@ function update() {
           angle: 0, // Send the angle data
           power: 0, // Send the power data
           currentMap : currentLevel,
-          status : "not_swing"
+          status : "not_swing",
+          signal : "ready"
         });
-
-        getInstance(roomId, turnIndex[0]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[1]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[2]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[3]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        fetchLastTick();
-        this.input.enabled = true;
+        angle = 0 ;
+        power = 0 ;
+  
         setMode.call(this, 1);
       }
     } else if (mode === 1) {
-      // check if ball is mode 1 and the player turn is userId
-      // console.log((currentTick - lastTick)/1000)
+      
       countdownText.setText('Time left:' + Math.round(10 - (currentTick - lastTick)/1000))
       screenText.setText("Stanby Phase")
       if (10 - (currentTick - lastTick)/1000 <= 0) {
         screenText.setText('Action Phase!')
         countdownText.setText('')
         fetchLastTick();
+        //change to next mode
+        updatePlayerControlbyId(userId, {
+          angle: angle, // Send the angle data
+          power: power, // Send the power data
+          currentMap : currentLevel,
+          status : "swing",
+          signal : "ready"
+        });
         setMode.call(this, 2)
       } else {
         this.input.on("pointermove", (pointer) => {
@@ -290,29 +296,111 @@ function update() {
           this.input.off("pointerup");
           arrow.setVisible(false) ; 
           power = powerCalc.call(this) * 1.5;
-          console.log(angle)
-          console.log(power)
+          updatePlayerControlbyId(userId, {
+            angle: angle, // Send the angle data
+            power: power, // Send the power data
+            currentMap : currentLevel,
+            status : "swing",
+            signal : "not_ready"
+          });
+          downTime = 0;
+        }
+      }
+    } else if (mode === 2) {
+      
+      //when score is called
+      turnIndex.forEach(id => {
+        inputOtherPlayer.call(this,id)
+      });
+      updatePlayerControlbyId(userId, {
+        angle: angle, // Send the angle data
+        power: power, // Send the power data
+        currentMap : currentLevel,
+        status : "swing",
+        signal : "not_ready"
+      });
+      setMode.call(this, 0);
+    }
+  }else{
+    if (0.5 - (currentTick - lastTick)/1000 <= 0) {
+      updateTime(turnIndex[0]) ;
+    }
+    if (mode === 0) {
+      // if the ball is moving, ball should not be able to be controlled
+      this.input.off("pointermove");
+      this.input.off("pointerdown");
+      this.input.off("pointerup");
+      // check if the ball is moving so slow that we can make it stop completely and change the mode
+      if (checkStop() && (currentTime - lastTime)/1000 >= 2) {
+        updatePlayerControlbyId(userId, {
+          angle: 0, // Send the angle data
+          power: 0, // Send the power data
+          currentMap : currentLevel,
+          status : "not_swing"
+        });
+        angle = 0 ;
+        power = 0 ;
+        
+        fetchLastTick();
+        this.input.enabled = true;
 
+        nextState = true ;
+        setMode.call(this, 1);
+      }
+    } else if (mode === 1) {
+
+      countdownText.setText('Time left:' + Math.round(10 - (currentTime - lastTime)/1000))
+      screenText.setText("Stanby Phase")
+      if (10 - (currentTime - lastTime)/1000 <= 0) {
+        screenText.setText('Action Phase!')
+        countdownText.setText('')
+        fetchLastTick();
+        //change to next mode
+        setMode.call(this, 2)
+      } else {
+        this.input.on("pointermove", (pointer) => {
+          angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
+          arrow.rotation = angle;
+          myPlayer.rotation = angle;
+        });
+        this.input.on("pointerdown", (pointer) => {
+          inputPressed = true;
+        });
+        this.input.on("pointerup", (pointer) => {
+          inputPressed = false;
+        });
+        if (inputPressed) {
+          if (downTime === 0) {
+            downTime = this.time.now;
+          } else {
+            arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
+          }
+        } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
+          this.input.enabled = false ;
+          this.input.off("pointermove") ;
+          this.input.off("pointerdown") ;
+          this.input.off("pointerup") ;
+          arrow.setVisible(false) ; 
+          power = powerCalc.call(this) * 1.5;
           updatePlayerControlbyId(userId, {
             angle: angle, // Send the angle data
             power: power, // Send the power data
             currentMap : currentLevel,
             status : "swing"
-
           });
           
           downTime = 0;
-        }
-        //setMode.call(this, 2);
+        } 
       }
     } else if (mode === 2) {
       //when score is called
       turnIndex.forEach(id => {
         inputOtherPlayer.call(this,id)
       });
-      
       setMode.call(this, 0);
     }
+  }
+  
 }
 
 function fetchCurTick() {
@@ -328,28 +416,81 @@ function fetchLastTick() {
   })
 }
 
+// async function checkNextState(id){
+//   const response = await fetch(
+//     `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
+//   ).then((r) => r.json());
+//   const data = response.data ;
+//   const signal = data.signal ;
+//   if (signal === "ready"){
+//       return true ; 
+//   }
+//   return false ;
+// }
+
+async function updateTime(id) {
+  //setInterval(async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch player data');
+      }
+  
+      const data = await response.json();
+      const curtime = data.currentTime;
+      const lasttime = data.lastTime;
+      console.log(currentTime)
+      console.log(curtime)
+      currentTime = curtime;
+      lastTime = lsatime
+    } catch (error) {
+      console.error('Error fetching player data:', error);
+    }
+ // }, 2000);
+}
+
+async function checkNextState(id) {
+  //setInterval(async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch player data');
+      }
+  
+      const data = await response.json();
+      const signal = data.signal;
+      
+      if (signal === "ready") {
+        console.log('Player is ready!');
+        // You can perform additional actions here when the player is ready
+      } else {
+        console.log('Player is not ready yet.');
+      }
+    } catch (error) {
+      console.error('Error fetching player data:', error);
+    }
+ // }, 2000);
+}
+
 async function inputOtherPlayer(id) {
  
-  console.log(id)
   const response = await fetch(
     `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
   ).then((r) => r.json());
-  // console.log(response)
   const data = response.data ;
 
   const power = data.power;
   const angle = data.angle;
-  console.log(power)
-  console.log(angle)
   this.physics.velocityFromRotation(angle, power, players[id].body.velocity);
   
 }
 
-function updatePowerAndAngle(newPower, newAngle) {
-  // Update global variables with the received power and angle data
-  power = newPower;
-  angle = newAngle;
-}
 
 async function initAllPlayers() {
   const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);

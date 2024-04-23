@@ -69,6 +69,8 @@ joinRoomButton.addEventListener("click", async () => {
       angle: 0,
       currentMap: 1,
       status: "not_swing",
+      currentTime: 0,
+      lastTime: 0
     });
 
     nameInput.value = "";
@@ -120,6 +122,9 @@ createRoomButton.addEventListener("click", async () => {
       angle: 0,
       currentMap: 1,
       status: "not_swing",
+      signal: "not_ready",
+      currentTime: 0,
+      lastTime: 0
     });
 
     nameInput.value = "";
