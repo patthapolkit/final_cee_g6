@@ -4,7 +4,6 @@ import {
   createInstance,
   createUser,
   createPlayerControl,
-  getAllRoomNumber
 } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
@@ -64,7 +63,7 @@ joinRoomButton.addEventListener("click", async () => {
       currentMap: 1,
       status: "not_swing",
       currentTime: 0,
-      lastTime: 0
+      lastTime: 0,
     });
 
     nameInput.value = "";
@@ -86,18 +85,17 @@ createRoomButton.addEventListener("click", async () => {
   const name = nameInput.value;
 
   const isRoomValid = await checkValidRoom(roomNumber);
-  if(!isRoomValid){
+  if (!isRoomValid) {
     openErrorPopup("Room number has been used");
-  }
-  else{
+  } else {
     const createdUser = await createUser({
       name: nameInput.value,
       roomNumber: roomNumberInput.value,
     });
-  
+
     if (createdUser.success) {
       const userId = createdUser.data._id;
-  
+
       const createdRoom = await createRoom({
         roomNumber: roomNumberInput.value,
         status: "waiting",
@@ -116,7 +114,7 @@ createRoomButton.addEventListener("click", async () => {
         ],
       });
       const roomId = createdRoom.room._id;
-  
+
       // create player control instance
       await createPlayerControl({
         player: userId,
@@ -126,26 +124,25 @@ createRoomButton.addEventListener("click", async () => {
         status: "not_swing",
         signal: "not_ready",
         currentTime: 0,
-        lastTime: 0
+        lastTime: 0,
       });
-  
+
       nameInput.value = "";
       roomNumberInput.value = "";
-  
+
       window.localStorage.setItem("userId", userId);
       window.localStorage.setItem("roomId", roomId);
-  
+
       window.location.href = "waiting.html";
-  
+
       window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
     } else {
       openErrorPopup(createdUser.message);
     }
   }
-
 });
 
 async function checkValidRoom(roomNumber) {
   const rooms = await getAllRoomNumber();
-  return rooms.data.some(room => room.roomNumber === Number(roomNumber));
+  return rooms.data.some((room) => room.roomNumber === Number(roomNumber));
 }
