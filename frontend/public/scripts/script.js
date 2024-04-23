@@ -1,4 +1,5 @@
-import { updateInstance, getInstance } from "./api.js";
+import { updateInstance, getInstance,updatePlayerControlbyId,getPlayerControlbyId,getAllPlayerControl,createPlayerControl } from "./api.js";
+
 import { BACKEND_URL } from "./config.js";
 
 const params = new URLSearchParams(window.location.search);
@@ -129,7 +130,7 @@ function loadLevel(levelNumber) {
 
 // Function to update the countdown timer
 function updateCountdown() {
-  console.log(countdownValue);
+  //console.log(countdownValue);
   countdownText.setText("Time: " + countdownValue); // Update the text
   countdownValue--; // Decrease countdown value
 
@@ -188,7 +189,9 @@ function scored(player, hole) {
     screenText.setText("");
     hole.disableBody(true, true);
     currentLevel++;
+    
     loadLevel.call(this, currentLevel);
+    
   }
 }
 
@@ -234,19 +237,25 @@ function createArrow() {
   arrow.setOrigin(0, 0.5);
 }
 
+function checkStop() {
+  return players[turnIndex[0]].body.velocity.length() < 10 &&
+  players[turnIndex[1]].body.velocity.length() < 10 &&
+  players[turnIndex[2]].body.velocity.length() < 10 &&
+  players[turnIndex[3]].body.velocity.length() < 10 
+}
+
 function update() {
-  console.log(countdownInterval);
-  if (turnIndex[currentPlayerIdx] === userId) {
-    if (mode === 0) {
+  //console.log(countdownInterval);
+  console.log(mode)
+  if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
       this.input.off("pointermove");
       this.input.off("pointerdown");
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
-      if (myPlayer.body.velocity.length() < 10) {
+      if (checkStop()) {
         // Set text after the ball stopped
-        currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber;
-        screenText.setText("Next player turn!");
+        screenText.setText("Stanby Phase");
         // Disable input events
         this.input.enabled = false;
         setTimeout(() => {
@@ -282,46 +291,48 @@ function update() {
           arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
         }
       } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
+        console.log("enter")
         power = powerCalc.call(this) * 1.5;
-        this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
+
+        updatePlayerControlbyId(userId, {
+          angle: angle, // Send the angle data
+          power: power, // Send the power data
+          currentMap : currentLevel,
+          status : "swing"
+
+        });
         clearInterval(countdownInterval);
         countdownText.setText("");
         screenText.setText("");
-
         downTime = 0;
-        setMode.call(this, 0);
+        setMode.call(this, 2);
       }
     } else if (mode === 2) {
       //when score is called
       this.input.off("pointermove");
       this.input.off("pointerdown");
       this.input.off("pointerup");
+      turnIndex.forEach(id => {
+        
+        inputOtherPlayer.call(this,id)
+      });
+      //setMode.call(this,0)
     }
-  } else {
-    inputOtherPlayer().then(() => {
-      //console.log(players[turnIndex[currentPlayerIdx]])
-      this.physics.velocityFromRotation(
-        angle,
-        power,
-        players[turnIndex[currentPlayerIdx]].body.velocity
-      );
-      currentPlayerIdx = (currentPlayerIdx + 1) % playerNumber;
-    });
-  }
 }
 
-async function inputOtherPlayer() {
-  console.log(userId);
+async function inputOtherPlayer(id) {
+ 
+  console.log(id)
   const response = await fetch(
-    `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${userId}`
-  );
-  const data = await response.json();
+    `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
+  ).then((r) => r.json());
+  console.log(response)
+  const data = response.data ;
 
-  // Find the instance corresponding to the specific person
-  const power = data.data.power;
-  const angle = data.data.angle;
-  // console.log(power,angle)
-  updatePowerAndAngle(power, angle);
+  const power = data.power;
+  const angle = data.angle;
+  this.physics.velocityFromRotation(angle, power, players[id].body.velocity);
+  
 }
 
 function updatePowerAndAngle(newPower, newAngle) {
@@ -361,7 +372,7 @@ async function initAllPlayers() {
         myPlayer.destroy();
       }
       myPlayer = this.physics.add
-        .image(600, 400, `ball${index + 1}`)
+        .image(instance.current_position.posX, instance.current_position.posY, `ball${index + 1}`)
         .setScale(0.015);
       myPlayer.setBounce(0.5);
       myPlayer.setDamping(true);
@@ -374,6 +385,8 @@ async function initAllPlayers() {
       idx++;
     }
   });
+
+  
 
   // Add colliders between all players
   for (const playerId1 in players) {

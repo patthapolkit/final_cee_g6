@@ -10,6 +10,7 @@ import {
   getUsers,
   createUser,
   getUserById,
+  createPlayerControl,
 } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
@@ -61,6 +62,15 @@ joinRoomButton.addEventListener("click", async () => {
       },
     });
 
+    // create player control instance
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0,
+      currentMap: 1,
+      status: "not_swing",
+    });
+
     nameInput.value = "";
     roomNumberInput.value = "";
     // save user id and room id in local storage
@@ -103,6 +113,15 @@ createRoomButton.addEventListener("click", async () => {
     });
     const roomId = createdRoom.room._id;
 
+    // create player control instance
+    await createPlayerControl({
+      player: userId,
+      power: 0,
+      angle: 0,
+      currentMap: 1,
+      status: "not_swing",
+    });
+
     nameInput.value = "";
     roomNumberInput.value = "";
     // save user id and room id in local storage
@@ -110,6 +129,8 @@ createRoomButton.addEventListener("click", async () => {
     window.localStorage.setItem("roomId", roomId);
     // redirect to waiting page
     window.location.href = "waiting.html";
+    // set backend url in local storage
+    window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
   } else {
     openErrorPopup(createdUser.message);
   }
