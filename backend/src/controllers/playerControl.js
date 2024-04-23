@@ -54,7 +54,6 @@ export const getAllPlayerControl = async (req, res) => {
 //@desc    Update player control by Id
 //@route   PUT /api/playerControl/upDatePlayerById
 export const updatePlayerControlbyId = async (req, res) => {
-  console.log("updatePlayerControlbyId");
   try {
     const playerId = req.query.playerId;
 
@@ -95,7 +94,6 @@ export const updatePlayerControlbyId = async (req, res) => {
     res.status(200).json({ success: true, data: playerControl });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
-    console.log(error.stack);
   }
 };
 
