@@ -1,4 +1,10 @@
-import { updateInstance, getInstance,updatePlayerControlbyId,getPlayerControlbyId,getAllPlayerControl,createPlayerControl, getTick, fetchTime } from "./api.js";
+import {
+  updateInstance,
+  getInstance,
+  updatePlayerControlbyId,
+  getPlayerControlbyId,
+  getRoomById,
+} from "./api.js";
 
 import { BACKEND_URL } from "./config.js";
 
@@ -6,7 +12,7 @@ const params = new URLSearchParams(window.location.search);
 const roomId = params.get("roomId");
 const userId = params.get("userId");
 
-let game, lastFetchTime, fetchInterval;
+let game, fetchInterval;
 if (!roomId) {
   alert("No room id provided.");
 } else if (!userId) {
@@ -36,8 +42,7 @@ if (!roomId) {
     },
   };
   game = new Phaser.Game(config);
-  lastFetchTime = 0;
-  fetchInterval = 5000; // Fetch data every 5 seconds
+  fetchInterval = 1000; // Fetch data every 1 seconds
 }
 
 let background;
@@ -46,7 +51,8 @@ let obstacles;
 let levelData;
 let myPlayer;
 let players = {};
-let turnIndex = new Array(4);
+let playersControl = {};
+let playersPosition = {};
 let hole;
 let arrow = null;
 let mode = 1;
@@ -55,16 +61,6 @@ let angle;
 let power;
 let downTime;
 let inputPressed;
-let currentPlayerIdx = 0; // index
-let inHole = 0;
-let countdownInterval;
-let countdownText;
-let screenText;
-let countdownValue;
-let playerNumber = 4;
-let scene;
-let currentTick;
-let lastTick;
 
 function preload() {
   this.load.image("grass", "../assets/grass.png");
@@ -76,10 +72,7 @@ function preload() {
   this.load.image("ball4", "../assets/ball_yellow.png");
   this.load.image("hole", "../assets/hole.png");
   this.load.image("arrow", "../assets/arrow.png");
-
-  // Load obstacles JSON
   this.load.json("levels", "../assets/levels.json");
-  scene = this;
 }
 
 function loadLevel(levelNumber) {
@@ -108,25 +101,11 @@ function loadLevel(levelNumber) {
     .setScale(holeData.scale);
   hole.setSize(hole.width * 0.2, hole.height * 0.2);
 
-  fetchLastTick();
   // Init all players
   initAllPlayers.call(this).then(() => {
-    turnIndex.forEach(id => {
-      this.physics.add.overlap(players[id], hole, scored, null, this);
-    });
+    this.physics.add.overlap(myPlayer, hole, scored, null, this);
     setMode.call(this, 1);
   });
-
-  countdownText = this.add.text(125, 18, "", {
-    fontSize: "30px",
-    color: "#ffffff",
-  });
-  screenText = this.add.text(650, 18, "", {
-    fontSize: "35px",
-    color: "#ffffff",
-  });
-  screenText.setOrigin(0.5);
-  countdownText.setOrigin(0.5);
 }
 
 function create() {
@@ -151,16 +130,25 @@ function scored(player, hole) {
   if (player.body.velocity.length() <= 250) {
     player.disableBody(true, true);
     arrow.destroy();
-    mode = 
-    inHole++;
-    if (inHole == 4){
-      // Stop timer
-      countdownText.setText("");
-      screenText.setText("");
-      hole.disableBody(true, true);
-      currentLevel++;
-      loadLevel.call(this, currentLevel);
-    }
+    currentLevel++;
+    // update player control
+    updatePlayerControlbyId(userId, {
+      currentMap: playersControl[userId].currentMap + 1,
+      power: 0,
+      angle: 0,
+      status: "not_swing",
+    });
+    // update player information
+    updateInstance(roomId, {
+      player: userId,
+      current_swings: playersPosition[userId].current_swings + 1,
+      total_swings: playersPosition[userId].total_swings + 1,
+      current_position: {
+        posX: 100,
+        posY: 100,
+      },
+    });
+    setMode.call(this, 2);
   }
 }
 
@@ -175,14 +163,10 @@ function setMode(newMode) {
       arrow.destroy();
     }
   } else if (newMode === 1) {
-    // set ball velocity to 0
     myPlayer.setVelocity(0, 0);
-
     createArrow.call(this);
-
     getInstance(roomId, userId).then((response) => {
       const data = response.data;
-      //console.log(data)
       updateInstance(roomId, {
         player: userId,
         current_swings: data.current_swings + 1,
@@ -193,11 +177,11 @@ function setMode(newMode) {
         },
       });
     });
-    //mode when ball fall in ahole
   } else if (newMode === 2) {
     if (arrow) {
       arrow.destroy();
     }
+    myPlayer.disableBody(true, true);
   }
 }
 
@@ -206,155 +190,50 @@ function createArrow() {
   arrow.setOrigin(0, 0.5);
 }
 
-function checkStop() {
-  return players[turnIndex[0]].body.velocity.length() < 10 &&
-  players[turnIndex[1]].body.velocity.length() < 10 &&
-  players[turnIndex[2]].body.velocity.length() < 10 &&
-  players[turnIndex[3]].body.velocity.length() < 10 
-}
-
 function update() {
-  fetchCurTick();
-  console.log(currentTick);
   if (mode === 0) {
-      // if the ball is moving, ball should not be able to be controlled
-      
-      this.input.off("pointermove");
-      this.input.off("pointerdown");
-      this.input.off("pointerup");
-      // check if the ball is moving so slow that we can make it stop completely and change the mode
-      if (checkStop() && (currentTick - lastTick)/1000 >= 2) {
-        updatePlayerControlbyId(userId, {
-          angle: 0, // Send the angle data
-          power: 0, // Send the power data
-          currentMap : currentLevel,
-          status : "not_swing"
-        });
-
-        getInstance(roomId, turnIndex[0]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[1]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[2]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        getInstance(roomId, turnIndex[3]).then((response) => {
-          const data = response.data;
-          console.log(data.current_position)
-        })
-
-        fetchLastTick();
-        this.input.enabled = true;
-        setMode.call(this, 1);
-      }
-    } else if (mode === 1) {
-      // check if ball is mode 1 and the player turn is userId
-      // console.log((currentTick - lastTick)/1000)
-      countdownText.setText('Time left:' + Math.round(10 - (currentTick - lastTick)/1000))
-      screenText.setText("Stanby Phase")
-      if (10 - (currentTick - lastTick)/1000 <= 0) {
-        screenText.setText('Action Phase!')
-        countdownText.setText('')
-        fetchLastTick();
-        setMode.call(this, 2)
+    // If the ball is moving, ball should not be able to be controlled
+    this.input.off("pointermove");
+    this.input.off("pointerdown");
+    this.input.off("pointerup");
+    // Check if the ball is moving so slow that we can make it stop completely and change the mode
+    if (myPlayer.body.velocity.length() < 10) {
+      setMode.call(this, 1);
+    }
+  } else if (mode === 1) {
+    this.input.on("pointermove", (pointer) => {
+      angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
+      arrow.rotation = angle;
+      myPlayer.rotation = angle;
+    });
+    this.input.on("pointerdown", (pointer) => {
+      inputPressed = true;
+    });
+    this.input.on("pointerup", (pointer) => {
+      inputPressed = false;
+    });
+    if (inputPressed) {
+      if (downTime === 0) {
+        downTime = this.time.now;
       } else {
-        this.input.on("pointermove", (pointer) => {
-          angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
-          arrow.rotation = angle;
-          myPlayer.rotation = angle;
-        });
-        this.input.on("pointerdown", (pointer) => {
-          inputPressed = true;
-        });
-        this.input.on("pointerup", (pointer) => {
-          inputPressed = false;
-        });
-        if (inputPressed) {
-          if (downTime === 0) {
-            downTime = this.time.now;
-          } else {
-            arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
-          }
-        } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
-          this.input.enabled = false ;
-          this.input.off("pointermove");
-          this.input.off("pointerdown");
-          this.input.off("pointerup");
-          arrow.setVisible(false) ; 
-          power = powerCalc.call(this) * 1.5;
-          console.log(angle)
-          console.log(power)
-
-          updatePlayerControlbyId(userId, {
-            angle: angle, // Send the angle data
-            power: power, // Send the power data
-            currentMap : currentLevel,
-            status : "swing"
-
-          });
-          
-          downTime = 0;
-        }
-        //setMode.call(this, 2);
+        arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
       }
-    } else if (mode === 2) {
-      //when score is called
-      turnIndex.forEach(id => {
-        inputOtherPlayer.call(this,id)
-      });
-      
+    } else if (downTime !== 0) {
+      power = powerCalc.call(this) * 1.5;
+      this.physics.velocityFromRotation(angle, power, myPlayer.body.velocity);
+      downTime = 0;
       setMode.call(this, 0);
     }
-}
-
-function fetchCurTick() {
-  // Fetch the current server time and set it to currentTick
-  getTick().then((serverTime) => {
-    currentTick = serverTime;
-  })
-}
-
-function fetchLastTick() {
-  getTick().then((serverTime) => {
-    lastTick = serverTime;
-  })
-}
-
-async function inputOtherPlayer(id) {
- 
-  console.log(id)
-  const response = await fetch(
-    `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
-  ).then((r) => r.json());
-  // console.log(response)
-  const data = response.data ;
-
-  const power = data.power;
-  const angle = data.angle;
-  console.log(power)
-  console.log(angle)
-  this.physics.velocityFromRotation(angle, power, players[id].body.velocity);
-  
-}
-
-function updatePowerAndAngle(newPower, newAngle) {
-  // Update global variables with the received power and angle data
-  power = newPower;
-  angle = newAngle;
+  } else if (mode === 2) {
+    this.input.off("pointermove");
+    this.input.off("pointerdown");
+    this.input.off("pointerup");
+  }
 }
 
 async function initAllPlayers() {
   const response = await fetch(`${BACKEND_URL}/api/room/${roomId}`);
   const data = await response.json();
-  let idx = 0;
 
   data.data.Instance.map((instance, index) => {
     if (instance.player !== userId) {
@@ -373,16 +252,17 @@ async function initAllPlayers() {
       player.setDrag(0.65);
       this.physics.add.collider(player, obstacles);
       this.physics.add.collider(player, boundary);
-      this.physics.add.collider(player, myPlayer);
       players[instance.player] = player;
-      turnIndex[idx] = instance.player;
-      idx++;
     } else {
       if (myPlayer) {
         myPlayer.destroy();
       }
       myPlayer = this.physics.add
-        .image(instance.current_position.posX, instance.current_position.posY, `ball${index + 1}`)
+        .image(
+          instance.current_position.posX,
+          instance.current_position.posY,
+          `ball${index + 1}`
+        )
         .setScale(0.015);
       myPlayer.setBounce(0.5);
       myPlayer.setDamping(true);
@@ -391,22 +271,76 @@ async function initAllPlayers() {
       this.physics.add.collider(myPlayer, obstacles);
       this.physics.add.collider(myPlayer, boundary);
       players[userId] = myPlayer;
-      turnIndex[idx] = userId;
-      idx++;
     }
   });
 
-  
-
-  // Add colliders between all players
-  for (const playerId1 in players) {
-    for (const playerId2 in players) {
-      if (playerId1 !== playerId2) {
-        this.physics.add.collider(players[playerId1], players[playerId2]);
-      }
-    }
-  }
-  // Resolve the promise to indicate that initialization is complete
   return Promise.resolve();
 }
 
+// Check if every player is on the same map
+function checkMap() {
+  let map = playersControl[userId].currentMap;
+  for (let player in playersControl) {
+    console.log(player, playersControl[player].currentMap);
+    if (playersControl[player].currentMap !== map) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// loadlevel if every player is on the same map
+function loadLevelIfSameMap() {
+  console.log(currentLevel);
+  if (checkMap() && playersControl[userId].currentMap !== currentLevel) {
+    setTimeout(() => {
+      loadLevel.call(this, playersControl[userId].currentMap);
+    }, 1000);
+  }
+}
+
+function updateAllPlayersInfomation() {
+  for (let player in players) {
+    getPlayerControlbyId(player).then((response) => {
+      const data = response.data;
+      playersControl[player] = data;
+    });
+  }
+  getRoomById(roomId).then((response) => {
+    const data = response.data;
+    data.Instance.map((instance) => {
+      playersPosition[instance.player] = {
+        current_swings: instance.current_swings,
+        total_swings: instance.total_swings,
+        posX: instance.current_position.posX,
+        posY: instance.current_position.posY,
+      };
+    });
+  });
+}
+
+function updateOtherPlayersPosition() {
+  for (let player in players) {
+    if (player === userId) {
+      continue;
+    }
+    // update player position
+    players[player].x = playersPosition[player].posX;
+    players[player].y = playersPosition[player].posY;
+  }
+}
+
+// Update player infomation every fetchInterval
+function connectWithShortPoll() {
+  setInterval(() => {
+    updateAllPlayersInfomation();
+  }, fetchInterval);
+
+  setInterval(() => {
+    updateOtherPlayersPosition();
+    loadLevelIfSameMap.call(this);
+    console.log("check map");
+  }, fetchInterval + 500);
+}
+
+connectWithShortPoll();
