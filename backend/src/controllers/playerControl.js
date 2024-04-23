@@ -54,6 +54,7 @@ export const getAllPlayerControl = async (req, res) => {
 //@desc    Update player control by Id
 //@route   PUT /api/playerControl/upDatePlayerById
 export const updatePlayerControlbyId = async (req, res) => {
+  console.log("updatePlayerControlbyId");
   try {
     const playerId = req.query.playerId;
 
