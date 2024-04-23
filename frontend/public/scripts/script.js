@@ -1,7 +1,4 @@
-import {
-  updateInstance,
-  getInstance,
-} from "./api.js";
+import { updateInstance, getInstance } from "./api.js";
 
 import { BACKEND_URL } from "./config.js";
 
@@ -87,8 +84,8 @@ function loadLevel(levelNumber) {
   // Destroy previous obstacles
   obstacles.clear(true, true);
   // Get obstacles data for the current level
-  const obstaclesData = levelData[(levelNumber - 1)].obstacles;
-  const holeData = levelData[(levelNumber - 1)].hole;
+  const obstaclesData = levelData[levelNumber - 1].obstacles;
+  const holeData = levelData[levelNumber - 1].hole;
   // Create obstacles
   obstaclesData.forEach((obstacle) => {
     obstacles
@@ -133,6 +130,15 @@ function scored(player, hole) {
     player.disableBody(true, true);
     hole.disableBody(true, true);
     arrow.destroy();
+    getPlayerControlbyId(userId).then((response) => {
+      const data = response.data;
+      updatePlayerControlbyId(userId, {
+        currentMap: data.currentMap + 1,
+        power: 0,
+        angle: 0,
+        status: "not_swing",
+      });
+    });
     getInstance(roomId, userId).then((response) => {
       const data = response.data;
       updateInstance(roomId, {
