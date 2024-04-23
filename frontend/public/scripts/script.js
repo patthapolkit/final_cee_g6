@@ -90,8 +90,8 @@ function loadLevel(levelNumber) {
   // Destroy previous obstacles
   obstacles.clear(true, true);
   // Get obstacles data for the current level
-  const obstaclesData = levelData[(levelNumber - 1) % 3].obstacles;
-  const holeData = levelData[(levelNumber - 1) % 3].hole;
+  const obstaclesData = levelData[(levelNumber - 1)].obstacles;
+  const holeData = levelData[(levelNumber - 1)].hole;
   // Create obstacles
   obstaclesData.forEach((obstacle) => {
     obstacles
@@ -197,7 +197,7 @@ function update() {
     this.input.off("pointerdown");
     this.input.off("pointerup");
     // Check if the ball is moving so slow that we can make it stop completely and change the mode
-    if (myPlayer.body.velocity.length() < 10) {
+    if (myPlayer.body.velocity.length() < 15) {
       setMode.call(this, 1);
     }
   } else if (mode === 1) {
@@ -228,6 +228,10 @@ function update() {
     this.input.off("pointermove");
     this.input.off("pointerdown");
     this.input.off("pointerup");
+  }
+
+  if (currentLevel > 3) {
+    window.location.href = "/leaderboard.html";
   }
 }
 
