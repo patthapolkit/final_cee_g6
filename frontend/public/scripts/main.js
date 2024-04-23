@@ -4,6 +4,7 @@ import {
   createInstance,
   createUser,
   createPlayerControl,
+  getAllRoomNumber
 } from "./api.js";
 
 const joinRoomButton = document.getElementById("joinRoomButton");
@@ -81,55 +82,70 @@ joinRoomButton.addEventListener("click", async () => {
 });
 
 createRoomButton.addEventListener("click", async () => {
-  const createdUser = await createUser({
-    name: nameInput.value,
-    roomNumber: roomNumberInput.value,
-  });
+  const roomNumber = roomNumberInput.value;
+  const name = nameInput.value;
 
-  if (createdUser.success) {
-    const userId = createdUser.data._id;
-
-    const createdRoom = await createRoom({
-      roomNumber: roomNumberInput.value,
-      status: "waiting",
-      numberOfPlayers: 1,
-      playerTurn: userId,
-      Instance: [
-        {
-          player: userId,
-          current_swings: 0,
-          total_swings: 0,
-          current_position: {
-            posX: 100,
-            posY: 100,
-          },
-        },
-      ],
-    });
-    const roomId = createdRoom.room._id;
-
-    // create player control instance
-    await createPlayerControl({
-      player: userId,
-      power: 0,
-      angle: 0,
-      currentMap: 1,
-      status: "not_swing",
-      signal: "not_ready",
-      currentTime: 0,
-      lastTime: 0
-    });
-
-    nameInput.value = "";
-    roomNumberInput.value = "";
-
-    window.localStorage.setItem("userId", userId);
-    window.localStorage.setItem("roomId", roomId);
-
-    window.location.href = "waiting.html";
-
-    window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
-  } else {
-    openErrorPopup(createdUser.message);
+  const isRoomValid = await checkValidRoom(roomNumber);
+  if(!isRoomValid){
+    openErrorPopup("Room number has been used");
   }
+  else{
+    const createdUser = await createUser({
+      name: nameInput.value,
+      roomNumber: roomNumberInput.value,
+    });
+  
+    if (createdUser.success) {
+      const userId = createdUser.data._id;
+  
+      const createdRoom = await createRoom({
+        roomNumber: roomNumberInput.value,
+        status: "waiting",
+        numberOfPlayers: 1,
+        playerTurn: userId,
+        Instance: [
+          {
+            player: userId,
+            current_swings: 0,
+            total_swings: 0,
+            current_position: {
+              posX: 100,
+              posY: 100,
+            },
+          },
+        ],
+      });
+      const roomId = createdRoom.room._id;
+  
+      // create player control instance
+      await createPlayerControl({
+        player: userId,
+        power: 0,
+        angle: 0,
+        currentMap: 1,
+        status: "not_swing",
+        signal: "not_ready",
+        currentTime: 0,
+        lastTime: 0
+      });
+  
+      nameInput.value = "";
+      roomNumberInput.value = "";
+  
+      window.localStorage.setItem("userId", userId);
+      window.localStorage.setItem("roomId", roomId);
+  
+      window.location.href = "waiting.html";
+  
+      window.localStorage.setItem("BACKEND_URL", BACKEND_URL);
+    } else {
+      openErrorPopup(createdUser.message);
+    }
+  }
+
 });
+
+async function checkValidRoom(roomNumber) {
+  const rooms = await getAllRoomNumber();
+  return rooms.data.some(room => room.roomNumber === Number(roomNumber));
+}
