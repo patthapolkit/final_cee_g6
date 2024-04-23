@@ -150,6 +150,8 @@ function scored(player, hole) {
   // Check if the player is moving slow enough to enter the hole
   if (player.body.velocity.length() <= 250) {
     player.disableBody(true, true);
+    arrow.destroy();
+    mode = 
     inHole++;
     if (inHole == 4){
       // Stop timer
@@ -180,7 +182,7 @@ function setMode(newMode) {
 
     getInstance(roomId, userId).then((response) => {
       const data = response.data;
-      // console.log(data)
+      //console.log(data)
       updateInstance(roomId, {
         player: userId,
         current_swings: data.current_swings + 1,
@@ -213,7 +215,7 @@ function checkStop() {
 
 function update() {
   fetchCurTick();
-
+  console.log(currentTick);
   if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
       
@@ -221,7 +223,34 @@ function update() {
       this.input.off("pointerdown");
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
-      if (checkStop() && (currentTick - lastTick)/1000 >= 1) {
+      if (checkStop() && (currentTick - lastTick)/1000 >= 2) {
+        updatePlayerControlbyId(userId, {
+          angle: 0, // Send the angle data
+          power: 0, // Send the power data
+          currentMap : currentLevel,
+          status : "not_swing"
+        });
+
+        getInstance(roomId, turnIndex[0]).then((response) => {
+          const data = response.data;
+          console.log(data.current_position)
+        })
+
+        getInstance(roomId, turnIndex[1]).then((response) => {
+          const data = response.data;
+          console.log(data.current_position)
+        })
+
+        getInstance(roomId, turnIndex[2]).then((response) => {
+          const data = response.data;
+          console.log(data.current_position)
+        })
+
+        getInstance(roomId, turnIndex[3]).then((response) => {
+          const data = response.data;
+          console.log(data.current_position)
+        })
+
         fetchLastTick();
         this.input.enabled = true;
         setMode.call(this, 1);
@@ -282,13 +311,6 @@ function update() {
         inputOtherPlayer.call(this,id)
       });
       
-      updatePlayerControlbyId(userId, {
-        angle: 0, // Send the angle data
-        power: 0, // Send the power data
-        currentMap : currentLevel,
-        status : "not_swing"
-      });
-      
       setMode.call(this, 0);
     }
 }
@@ -312,11 +334,13 @@ async function inputOtherPlayer(id) {
   const response = await fetch(
     `${BACKEND_URL}/api/playerControl/getPlayerById?playerId=${id}`
   ).then((r) => r.json());
-  console.log(response)
+  // console.log(response)
   const data = response.data ;
 
   const power = data.power;
   const angle = data.angle;
+  console.log(power)
+  console.log(angle)
   this.physics.velocityFromRotation(angle, power, players[id].body.velocity);
   
 }
