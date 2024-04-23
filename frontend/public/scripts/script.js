@@ -1,4 +1,9 @@
-import { updateInstance, getInstance } from "./api.js";
+import {
+  updateInstance,
+  getInstance,
+  getPlayerControlbyId,
+  updatePlayerControlbyId,
+} from "./api.js";
 
 import { BACKEND_URL } from "./config.js";
 
