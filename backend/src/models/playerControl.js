@@ -23,6 +23,12 @@ const playerControlSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  currentTime:{
+    type:Number
+  },
+  lastTime:{
+    type:Number
+  }
 });
 
 const playerControl = mongoose.model("PlayerControl", playerControlSchema);

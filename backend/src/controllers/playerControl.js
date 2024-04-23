@@ -77,13 +77,15 @@ export const updatePlayerControlbyId = async (req, res) => {
       });
     }
 
-    const { signal, currentMap, status, power, angle } = req.body;
-    if (currentMap === null || status === null || power === null || angle === null) {
+    const { lastTime,currentTime,signal, currentMap, status, power, angle } = req.body;
+    if (currentMap === null || status === null || power === null || angle === null || time === null) {
       return res.status(404).json({
         success: false,
         message: "Body needed",
       });
     }
+    playerControl.lastTime = lastTime ;
+    playerControl.currentTime = currentTime ;
     playerControl.signal = signal;
     playerControl.currentMap = currentMap;
     playerControl.status = status;
