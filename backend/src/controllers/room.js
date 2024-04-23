@@ -26,12 +26,11 @@ export const getAllRooms = async (req, res) => {
 //@route   GET /api/room/number
 export const getAllRoomNumber = async (req, res) => {
   try {
-    console.log("trying to get all number...");
     const rooms = await Room.find();
     const outData = rooms.map((room) => {
       return { roomNumber: room.roomNumber, roomId: room._id };
     });
-    console.log(outData);
+    // console.log(outData);
     res.status(200).json({ success: true, count: rooms.length, data: outData });
   } catch (error) {
     res.status(404).json({ success: false, message: "room not found" });
@@ -76,7 +75,6 @@ export const deleteRoomById = async (req, res) => {
 //@route   GET /api/room/instanceGet/:id?player=playerId
 export const getInstance = async (req, res) => {
   try {
-    console.log("trying to get instance");
     const roomId = req.params.id;
     const playerId = req.query.player;
 
@@ -138,7 +136,7 @@ export const createInstance = async (req, res) => {
       room: updatedRoom,
     });
   } catch (error) {
-    console.error("Error adding instance:", error);
+    console.error("Error adding instance:", error.stack);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -147,7 +145,6 @@ export const createInstance = async (req, res) => {
 //@route   PUT /api/room/instanceDelete/:id
 export const deleteInstance = async (req, res) => {
   try {
-    console.log("trying to delete intstance");
     const roomId = req.params.id;
     const { player } = req.body; // Extracting the player ID from the request body
     const updatedRoom = await Room.findByIdAndUpdate(
@@ -177,7 +174,7 @@ export const deleteInstance = async (req, res) => {
       room: updatedRoom,
     });
   } catch (error) {
-    console.error("Error deleting instance:", error);
+    console.error("Error deleting instance:", error.stack);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -185,14 +182,15 @@ export const deleteInstance = async (req, res) => {
 //@desc    Update Instance by Id
 //@route   PUT /api/room/instanceUpdate/:id
 export const updateInstance = async (req, res) => {
-  const { player, current_swings, total_swings, current_position } = req.body;
+  const { player, current_swings, total_swings, current_position, target_position } = req.body;
 
   try {
     if (
       player === undefined ||
       current_swings === undefined ||
       total_swings === undefined ||
-      current_position === undefined
+      current_position === undefined ||
+      target_position === undefined
     ) {
       return res
         .status(400)
@@ -218,6 +216,7 @@ export const updateInstance = async (req, res) => {
     playerInstance.current_swings = current_swings;
     playerInstance.total_swings = total_swings;
     playerInstance.current_position = current_position;
+    playerInstance.target_position = target_position;
 
     await room.save();
 

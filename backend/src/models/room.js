@@ -38,7 +38,17 @@ const RoomSchema = new mongoose.Schema({
             type: Number,
             required: true
         }
-    }
+    },
+    target_position: {
+      posX: {
+          type: Number,
+          required: true
+      },
+      posY: {
+          type: Number,
+          required: true
+      }
+  }
   }]
 
 });
