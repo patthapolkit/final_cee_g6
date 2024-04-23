@@ -117,12 +117,12 @@ function loadLevel(levelNumber) {
     setMode.call(this, 1);
   });
 
-  countdownText = this.add.text(100, 18, "", {
-    fontSize: "35px",
+  countdownText = this.add.text(125, 18, "", {
+    fontSize: "30px",
     color: "#ffffff",
   });
-  screenText = this.add.text(400, 300, "", {
-    fontSize: "48px",
+  screenText = this.add.text(650, 18, "", {
+    fontSize: "35px",
     color: "#ffffff",
   });
   screenText.setOrigin(0.5);
@@ -212,31 +212,37 @@ function checkStop() {
 }
 
 function update() {
-  //console.log(countdownInterval);
   fetchCurTick();
+
   if (mode === 0) {
       // if the ball is moving, ball should not be able to be controlled
+      
       this.input.off("pointermove");
       this.input.off("pointerdown");
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
-      if (checkStop()) {
+      if (checkStop() && (currentTick - lastTick)/1000 >= 1) {
+        updatePlayerControlbyId(userId, {
+          angle: 0, // Send the angle data
+          power: 0, // Send the power data
+          currentMap : currentLevel,
+          status : "not_swing"
+        });
         fetchLastTick();
+        this.input.enabled = true;
         setMode.call(this, 1);
       }
     } else if (mode === 1) {
       // check if ball is mode 1 and the player turn is userId
       // console.log((currentTick - lastTick)/1000)
-      console.log(currentTick)
-      console.log(lastTick)
-      console.log((currentTick - lastTick)/1000)
-      screenText.setText('' + (currentTick - lastTick)/1000)
-      if ((currentTick - lastTick)/1000 >= 10) {
-        console.log('change')
+      countdownText.setText('Time left:' + Math.round(10 - (currentTick - lastTick)/1000))
+      screenText.setText("Stanby Phase")
+      if (10 - (currentTick - lastTick)/1000 <= 0) {
+        screenText.setText('Action Phase!')
+        countdownText.setText('')
         fetchLastTick();
         setMode.call(this, 2)
       } else {
-        console.log('start')
         this.input.on("pointermove", (pointer) => {
           angle = Phaser.Math.Angle.BetweenPoints(myPlayer, pointer);
           arrow.rotation = angle;
@@ -255,13 +261,14 @@ function update() {
             arrow.scaleX = 0.15 + (powerCalc.call(this) / 500) * 0.2;
           }
         } else if (downTime !== 0 && myPlayer.body && myPlayer.body.velocity) {
-          console.log("enter")
           this.input.enabled = false ;
           this.input.off("pointermove");
           this.input.off("pointerdown");
           this.input.off("pointerup");
           arrow.setVisible(false) ; 
           power = powerCalc.call(this) * 1.5;
+          console.log(angle)
+          console.log(power)
 
           updatePlayerControlbyId(userId, {
             angle: angle, // Send the angle data
@@ -280,14 +287,15 @@ function update() {
       turnIndex.forEach(id => {
         inputOtherPlayer.call(this,id)
       });
+
       updatePlayerControlbyId(userId, {
         angle: 0, // Send the angle data
         power: 0, // Send the power data
         currentMap : currentLevel,
         status : "not_swing"
       });
-
-      setMode(this, 0);
+      
+      setMode.call(this, 0);
     }
 }
 
