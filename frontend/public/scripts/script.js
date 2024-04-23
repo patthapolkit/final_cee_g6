@@ -76,6 +76,7 @@ function preload() {
 }
 
 function loadLevel(levelNumber) {
+  currentLevel = levelNumber;
   // Destroy previous arrow and hole
   if (arrow) {
     arrow.destroy();
@@ -130,7 +131,6 @@ function scored(player, hole) {
   if (player.body.velocity.length() <= 250) {
     player.disableBody(true, true);
     arrow.destroy();
-    currentLevel++;
     // update player control
     updatePlayerControlbyId(userId, {
       currentMap: playersControl[userId].currentMap + 1,
