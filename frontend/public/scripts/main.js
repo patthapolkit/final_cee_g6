@@ -1,15 +1,8 @@
 import {
   createRoom,
-  getAllRooms,
   getAllRoomNumber,
-  getRoomById,
-  deleteRoomById,
   createInstance,
-  updateInstance,
-  deleteInstance,
-  getUsers,
   createUser,
-  getUserById,
   createPlayerControl,
 } from "./api.js";
 
