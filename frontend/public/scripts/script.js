@@ -51,8 +51,6 @@ let obstacles;
 let levelData;
 let myPlayer;
 let players = {};
-let playersControl = {};
-let playersPosition = {};
 let hole;
 let arrow = null;
 let mode = 1;
@@ -76,8 +74,10 @@ function preload() {
 }
 
 function loadLevel(levelNumber) {
-  currentLevel = levelNumber;
   // Destroy previous arrow and hole
+  if (myPlayer) {
+    myPlayer.destroy();
+  }
   if (arrow) {
     arrow.destroy();
   }
@@ -129,26 +129,24 @@ function create() {
 function scored(player, hole) {
   // Check if the player is moving slow enough to enter the hole
   if (player.body.velocity.length() <= 250) {
-    player.disableBody(true, true);
-    arrow.destroy();
-    // update player control
-    updatePlayerControlbyId(userId, {
-      currentMap: playersControl[userId].currentMap + 1,
-      power: 0,
-      angle: 0,
-      status: "not_swing",
-    });
-    // update player information
-    updateInstance(roomId, {
-      player: userId,
-      current_swings: playersPosition[userId].current_swings + 1,
-      total_swings: playersPosition[userId].total_swings + 1,
-      current_position: {
-        posX: 100,
-        posY: 100,
-      },
-    });
     setMode.call(this, 2);
+    player.disableBody(true, true);
+    hole.disableBody(true, true);
+    arrow.destroy();
+    getInstance(roomId, userId).then((response) => {
+      const data = response.data;
+      updateInstance(roomId, {
+        player: userId,
+        current_swings: 0,
+        total_swings: data.total_swings + 1,
+        current_position: {
+          posX: 100,
+          posY: 100,
+        },
+      });
+    });
+    currentLevel++;
+    loadLevel.call(this, currentLevel);
   }
 }
 
@@ -181,7 +179,6 @@ function setMode(newMode) {
     if (arrow) {
       arrow.destroy();
     }
-    myPlayer.disableBody(true, true);
   }
 }
 
@@ -237,32 +234,13 @@ async function initAllPlayers() {
 
   data.data.Instance.map((instance, index) => {
     if (instance.player !== userId) {
-      if (players[instance.player]) {
-        players[instance.player].destroy();
-      }
-      let player = this.physics.add
-        .image(
-          instance.current_position.posX,
-          instance.current_position.posY,
-          `ball${index + 1}`
-        )
-        .setScale(0.015);
-      player.setBounce(0.5);
-      player.setDamping(true);
-      player.setDrag(0.65);
-      this.physics.add.collider(player, obstacles);
-      this.physics.add.collider(player, boundary);
-      players[instance.player] = player;
+      players[instance.player] = null;
     } else {
       if (myPlayer) {
         myPlayer.destroy();
       }
       myPlayer = this.physics.add
-        .image(
-          instance.current_position.posX,
-          instance.current_position.posY,
-          `ball${index + 1}`
-        )
+        .image(100, 100, `ball${index + 1}`)
         .setScale(0.015);
       myPlayer.setBounce(0.5);
       myPlayer.setDamping(true);
@@ -276,71 +254,3 @@ async function initAllPlayers() {
 
   return Promise.resolve();
 }
-
-// Check if every player is on the same map
-function checkMap() {
-  let map = playersControl[userId].currentMap;
-  for (let player in playersControl) {
-    console.log(player, playersControl[player].currentMap);
-    if (playersControl[player].currentMap !== map) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// loadlevel if every player is on the same map
-function loadLevelIfSameMap() {
-  console.log(currentLevel);
-  if (checkMap() && playersControl[userId].currentMap !== currentLevel) {
-    setTimeout(() => {
-      loadLevel.call(this, playersControl[userId].currentMap);
-    }, 1000);
-  }
-}
-
-function updateAllPlayersInfomation() {
-  for (let player in players) {
-    getPlayerControlbyId(player).then((response) => {
-      const data = response.data;
-      playersControl[player] = data;
-    });
-  }
-  getRoomById(roomId).then((response) => {
-    const data = response.data;
-    data.Instance.map((instance) => {
-      playersPosition[instance.player] = {
-        current_swings: instance.current_swings,
-        total_swings: instance.total_swings,
-        posX: instance.current_position.posX,
-        posY: instance.current_position.posY,
-      };
-    });
-  });
-}
-
-function updateOtherPlayersPosition() {
-  for (let player in players) {
-    if (player === userId) {
-      continue;
-    }
-    // update player position
-    players[player].x = playersPosition[player].posX;
-    players[player].y = playersPosition[player].posY;
-  }
-}
-
-// Update player infomation every fetchInterval
-function connectWithShortPoll() {
-  setInterval(() => {
-    updateAllPlayersInfomation();
-  }, fetchInterval);
-
-  setInterval(() => {
-    updateOtherPlayersPosition();
-    loadLevelIfSameMap.call(this);
-    console.log("check map");
-  }, fetchInterval + 500);
-}
-
-connectWithShortPoll();
