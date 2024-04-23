@@ -144,5 +144,8 @@ createRoomButton.addEventListener("click", async () => {
 
 async function checkValidRoom(roomNumber) {
   const rooms = await getAllRoomNumber();
-  return rooms.data.some((room) => room.roomNumber === Number(roomNumber));
+  const room = rooms.data.find(
+    (room) => room.roomNumber === Number(roomNumber)
+  );
+  return !room;
 }
