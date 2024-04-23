@@ -137,6 +137,7 @@ function scored(player, hole) {
     arrow.destroy();
     getPlayerControlbyId(userId).then((response) => {
       const data = response.data;
+      console.log(data);
       updatePlayerControlbyId(userId, {
         currentMap: data.currentMap + 1,
         power: 0,
