@@ -73,23 +73,18 @@ export const updatePlayerControlbyId = async (req, res) => {
       });
     }
 
-    const { lastTime, currentTime, signal, currentMap, status, power, angle } =
-      req.body;
+    const { currentMap, status, power, angle } = req.body;
     if (
       currentMap === null ||
       status === null ||
       power === null ||
-      angle === null ||
-      time === null
+      angle === null
     ) {
       return res.status(404).json({
         success: false,
         message: "Body needed",
       });
     }
-    playerControl.lastTime = lastTime;
-    playerControl.currentTime = currentTime;
-    playerControl.signal = signal;
     playerControl.currentMap = currentMap;
     playerControl.status = status;
     playerControl.power = power;
