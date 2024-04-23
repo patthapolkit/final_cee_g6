@@ -1,7 +1,8 @@
 import PlayerControl from "../models/playerControl.js";
 
 //swing and not_swing
-//backend เก็บ currentmap, status = ยิงแล้ว, ยังไม่ยิง
+//backend เก็บ currentmap, status = ยิงแล้ว, ยังไม่ยิง + signal
+//ready and not_ready
 //@desc    Create playerControl
 //@route   POST /api/playerControl
 export const createPlayerControl = async (req, res) => {
@@ -76,13 +77,14 @@ export const updatePlayerControlbyId = async (req, res) => {
       });
     }
 
-    const { currentMap, status, power, angle } = req.body;
+    const { signal, currentMap, status, power, angle } = req.body;
     if (currentMap === null || status === null || power === null || angle === null) {
       return res.status(404).json({
         success: false,
         message: "Body needed",
       });
     }
+    playerControl.signal = signal;
     playerControl.currentMap = currentMap;
     playerControl.status = status;
     playerControl.power = power;

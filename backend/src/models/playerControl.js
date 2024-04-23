@@ -4,6 +4,9 @@ const playerControlSchema = new mongoose.Schema({
   player: {
     type: mongoose.Schema.ObjectId,
   },
+  signal: {
+    type: String,
+  },
   currentMap: {
     type: Number,
     required: true,
