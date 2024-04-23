@@ -74,7 +74,7 @@ function preload() {
 }
 
 function loadLevel(levelNumber) {
-  if (loadLevel > 3) {
+  if (levelNumber > 3) {
     window.location.href = "/leaderboard.html";
   }
   // Destroy previous arrow and hole
