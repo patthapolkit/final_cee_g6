@@ -222,12 +222,6 @@ function update() {
       this.input.off("pointerup");
       // check if the ball is moving so slow that we can make it stop completely and change the mode
       if (checkStop() && (currentTick - lastTick)/1000 >= 1) {
-        updatePlayerControlbyId(userId, {
-          angle: 0, // Send the angle data
-          power: 0, // Send the power data
-          currentMap : currentLevel,
-          status : "not_swing"
-        });
         fetchLastTick();
         this.input.enabled = true;
         setMode.call(this, 1);
@@ -287,7 +281,7 @@ function update() {
       turnIndex.forEach(id => {
         inputOtherPlayer.call(this,id)
       });
-
+      
       updatePlayerControlbyId(userId, {
         angle: 0, // Send the angle data
         power: 0, // Send the power data

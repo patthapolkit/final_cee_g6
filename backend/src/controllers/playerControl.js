@@ -77,7 +77,7 @@ export const updatePlayerControlbyId = async (req, res) => {
     }
 
     const { currentMap, status, power, angle } = req.body;
-    if (!currentMap || !status || !power || !angle) {
+    if (currentMap === null || status === null || power === null || angle === null) {
       return res.status(404).json({
         success: false,
         message: "Body needed",
