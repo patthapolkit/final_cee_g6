@@ -24,7 +24,10 @@ function connectWithShortPoll() {
 
       // if the number of players is 4, redirect to game page
       if (numberOfPlayers === 4) {
-        redirectToGame();
+        // delay 3 secs before redirecting to game page
+        setTimeout(() => {
+          redirectToGame();
+        }, 3000);
       }
     });
     lastFetch = new Date();
