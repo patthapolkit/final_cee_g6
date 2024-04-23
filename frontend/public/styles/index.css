@@ -29,6 +29,8 @@ body {
   margin: 0px 40px;
   padding: 40px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  min-width: 35%;
+  min-height: 20%;
 }
 
 @media screen and (max-width: 768px) {
