@@ -1,9 +1,6 @@
 import {
   updateInstance,
   getInstance,
-  updatePlayerControlbyId,
-  getPlayerControlbyId,
-  getRoomById,
 } from "./api.js";
 
 import { BACKEND_URL } from "./config.js";

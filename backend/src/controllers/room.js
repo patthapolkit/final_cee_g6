@@ -26,12 +26,10 @@ export const getAllRooms = async (req, res) => {
 //@route   GET /api/room/number
 export const getAllRoomNumber = async (req, res) => {
   try {
-    console.log("trying to get all number...");
     const rooms = await Room.find();
     const outData = rooms.map((room) => {
       return { roomNumber: room.roomNumber, roomId: room._id };
     });
-    console.log(outData);
     res.status(200).json({ success: true, count: rooms.length, data: outData });
   } catch (error) {
     res.status(404).json({ success: false, message: "room not found" });
@@ -76,7 +74,6 @@ export const deleteRoomById = async (req, res) => {
 //@route   GET /api/room/instanceGet/:id?player=playerId
 export const getInstance = async (req, res) => {
   try {
-    console.log("trying to get instance");
     const roomId = req.params.id;
     const playerId = req.query.player;
 
@@ -99,7 +96,6 @@ export const getInstance = async (req, res) => {
     }
     res.status(200).json({ success: true, data: playerInstance });
   } catch (err) {
-    console.log(err.stack);
     res.status(500).json({ success: false, message: "Error getting instance" });
   }
 };
@@ -147,7 +143,6 @@ export const createInstance = async (req, res) => {
 //@route   PUT /api/room/instanceDelete/:id
 export const deleteInstance = async (req, res) => {
   try {
-    console.log("trying to delete intstance");
     const roomId = req.params.id;
     const { player } = req.body; // Extracting the player ID from the request body
     const updatedRoom = await Room.findByIdAndUpdate(

@@ -1,8 +1,5 @@
 import PlayerControl from "../models/playerControl.js";
 
-//swing and not_swing
-//backend เก็บ currentmap, status = ยิงแล้ว, ยังไม่ยิง + signal
-//ready and not_ready
 //@desc    Create playerControl
 //@route   POST /api/playerControl
 export const createPlayerControl = async (req, res) => {
@@ -39,7 +36,6 @@ export const getPlayerControlbyId = async (req, res) => {
 
     res.status(200).json({ success: true, data: playerControl });
   } catch (error) {
-    console.log(error.stack);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -51,7 +47,6 @@ export const getAllPlayerControl = async (req, res) => {
     const player = await PlayerControl.find();
     res.status(200).json({ success: true, count: player.length, data: player });
   } catch (error) {
-    console.log(error.stack);
     res.status(404).json({ success: false, message: "playerId not found" });
   }
 };
@@ -96,7 +91,6 @@ export const updatePlayerControlbyId = async (req, res) => {
 
     res.status(200).json({ success: true, data: playerControl });
   } catch (error) {
-    console.log(error.stack);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -127,7 +121,6 @@ export const deletePlayerControlbyId = async (req, res) => {
       message: "Player control deleted",
     });
   } catch (error) {
-    console.log(error.stack);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
